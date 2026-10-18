@@ -3,6 +3,6 @@ recursive-include data *.desktop *.svg *.xml
 recursive-include scripts *.sh *.py
 recursive-include tests *.py
 recursive-include packaging *
-include CHANGELOG.md RELEASES.md INSTALL.md
+include CHANGELOG.md RELEASES.md INSTALL.md DEVELOPMENT.md
 recursive-include .github *.yml
 global-exclude *.py[cod]

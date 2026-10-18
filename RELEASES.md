@@ -1,45 +1,83 @@
 # Release engineering
 
-## Status
+Version 0.1.0 is the first release target. GitHub Releases hosts the source
+archive, wheel, and native packages. AUR publishing and AppImage qualification
+remain pending.
 
-The application remains a development build, version 0.1.0. The public upstream
-repository is https://github.com/Raithlin/plasma-shortcut-explorer. No public
-release has been created. Native package recipes use system Python and distro
-Qt bindings, rather than pip at install time. The final application namespace, screenshots, and signing keys must
-be settled before publishing a release. The current desktop ID is intentionally preserved
-to avoid breaking an existing user-assigned shortcut.
+## Prepare a version
 
-## Quality gates
+Keep the version consistent in:
 
-Run `KDE_SHORTCUTS_PYTHON=.venv/bin/python scripts/test.sh -q`. This creates an
-isolated D-Bus session and runs all tests with Qt's offscreen backend. It enforces
-95% line and 95% branch coverage independently, across all application modules.
-No application code is excluded. The integration test exports a mock KGlobalAccel
-only on the private bus; it never registers shortcuts with the desktop.
+- `pyproject.toml` and `src/kde_shortcuts/__init__.py`
+- `packaging/rpm/plasma-shortcut-explorer.spec`
+- `packaging/debian/changelog`
+- `data/org.kde.shortcutexplorer.metainfo.xml`
 
-Real Plasma Wayland remains a separate manual release gate: launch via the
-assigned shortcut, verify Escape, focus loss, refresh after a changed binding,
-monitor placement, and system light/dark themes. Automated coverage does not
-prove compositor behavior or package portability.
+Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.0:
 
-## Build sources
+```sh
+python scripts/validate_release.py --tag v0.1.0
+```
+
+The script reports consistent metadata or exits with an error. It also checks
+the desktop ID and icon. Keep `org.kde.shortcutexplorer` stable to preserve
+existing shortcut assignments.
+
+Run the [test suite and real-desktop checks](DEVELOPMENT.md#run-the-tests)
+before tagging. Tests require at least 95% line and 95% branch coverage.
+Check keyboard launch, Escape, focus loss, refresh, themes, and monitor placement
+in Plasma as well.
+
+## Publish automatically
+
+Push a `vX.Y.Z` tag that matches the version metadata to trigger
+`.github/workflows/release.yml`. The workflow:
+
+1. Validates the tag and runs tests and coverage checks.
+2. Builds the source archive and wheel.
+3. Builds, installs, checks, and removes the Arch, Debian, and Fedora packages
+   in disposable containers.
+4. Checks that every package format is present and generates `SHA256SUMS`.
+5. Uploads all assets to a temporary draft, then publishes it as the latest
+   GitHub release without an approval step.
+
+A failed upload leaves a draft. Rerun **Publish release** with the existing tag
+to resume. The workflow refuses to replace an already-public release.
+
+Ordinary pushes and pull requests run tests and source builds. To test native
+packages without publishing, run **Tests and packages** manually with
+`packages` enabled. AppImage uses its own manual workflow.
+
+GitHub downloads are the current distribution channel for Debian, Fedora, and
+Arch. They do not add package-manager update repositories or publish to AUR.
+[INSTALL.md](INSTALL.md) explains installation and manual upgrades.
+
+## Build source archives locally
+
+In the development environment, run:
 
 ```sh
 .venv/bin/pip install build
 .venv/bin/python -m build
 ```
 
-Both the sdist and wheel include the desktop entry, icon, and AppStream metadata.
-The sdist also includes tests and packaging recipes. Build native packages from
-the same sdist, not from a wheel copied out of a developer virtual environment.
-Before a public build, fill the real homepage with
-`python scripts/configure_release.py --project-url https://github.com/Raithlin/plasma-shortcut-explorer`
-and validate with `appstreamcli validate --no-net data/*.metainfo.xml`.
-This is the public upstream location.
+The build writes a `.tar.gz` source archive and `.whl` under `dist/`. Both contain
+the desktop entry, icon, and AppStream metadata. The source archive also includes
+tests, documentation, and package recipes. Build native packages from this archive.
 
-## Native builds and installation checks
+CI derives the homepage from its GitHub repository. If building for a different
+upstream location, set it before building:
 
-With rootless Podman installed, after building the sdist:
+```sh
+python scripts/configure_release.py --project-url https://github.com/Raithlin/plasma-shortcut-explorer
+appstreamcli validate --no-net data/org.kde.shortcutexplorer.metainfo.xml
+```
+
+The helper updates the release URLs; AppStream reports any metadata errors.
+
+## Build native packages locally
+
+Install rootless Podman and build the source archive first. Run:
 
 ```sh
 scripts/build_native.sh arch
@@ -47,25 +85,28 @@ scripts/build_native.sh deb
 scripts/build_native.sh rpm
 ```
 
-Use `KDE_SHORTCUTS_CONTAINER_ENGINE=docker` if using Docker. Each command creates
-a disposable container, installs its own build dependencies, runs tests, builds
-and installs the package, checks its assets and missing-session diagnostics,
-then removes it and checks that the executable is gone. It does not install
-packages on the host. Output is under `dist/native/{arch,deb,rpm}`.
-Image tags move; record the resolved image digests and build logs for a release.
-GitHub Actions are pinned to immutable commit IDs, with their major versions in comments.
-These recipes alone do not establish bit-for-bit reproducibility.
+Each command runs its package manager inside a disposable container. It tests
+and installs the package, checks launchers, desktop assets, imports, and
+missing-session diagnostics, then removes it. Outputs appear under
+`dist/native/{arch,deb,rpm}`. Host packages stay unchanged.
 
-Targets: current Arch, Debian 13, and Fedora 44 on x86_64. Native packages are
-architecture-independent Python code, but dependencies must be available on each
-architecture. Ubuntu is not yet a validated target; build on the actual target
-release rather than assuming Debian binaries work there. Python 3.11+, PySide6
-6.6+, and a Plasma 6 session providing `allMainComponents`,
-`allActionsForComponent`, and `shortcutKeys` are required. All three methods were also verified in the [KGlobalAccel 6.0.0 interface XML](https://github.com/KDE/kglobalaccel/blob/v6.0.0/src/org.kde.KGlobalAccel.xml). The live service is verified on Frameworks 6.31; older target desktop versions still require live testing.
+Set `KDE_SHORTCUTS_CONTAINER_ENGINE=docker` to use Docker. Targets are rolling
+Arch, Debian 13, and Fedora 44 on x86-64. Recipes produce architecture-independent
+Python packages, but dependencies and desktop behavior still need validation on
+other targets. Do not assume Debian packages support Ubuntu.
 
-The Arch PKGBUILD is generated using the source archive's actual SHA-256. For AUR
-publication regenerate it with a real `--project-url` and `--source-url`, then
-run `makepkg --printsrcinfo`. Never publish a checksum of `SKIP`.
+Record resolved container image digests and build logs for each release. Image
+tags move; the recipes do not promise bit-for-bit reproducibility. GitHub Actions
+use pinned commit IDs.
+
+## Prepare an AUR submission
+
+Follow the [AUR submission guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines).
+Create an [AUR account](https://aur.archlinux.org/register), register a dedicated
+public SSH key, and check for an existing official or AUR package before submitting.
+The account and automation key setup are still pending for this project.
+
+Generate the recipe from the published source asset:
 
 ```sh
 python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.0.tar.gz \
@@ -73,19 +114,29 @@ python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.0.tar.gz \
   --source-url https://github.com/Raithlin/plasma-shortcut-explorer/releases/download/v0.1.0/plasma_shortcut_explorer-0.1.0.tar.gz
 ```
 
-For direct installation use `sudo pacman -U FILE.pkg.tar.zst`,
-`sudo apt install ./FILE.deb`, or `sudo dnf install ./FILE.rpm`.
-Use the same manager to remove `plasma-shortcut-explorer`. Packages never assign
-launch shortcuts, install autostart entries, or alter KDE shortcut files.
+The helper writes `dist/arch/PKGBUILD` with the source URL and actual SHA-256,
+then copies the archive alongside it. In a validated Arch packaging environment,
+run from the recipe directory:
 
-## AppImage
+```sh
+makepkg --printsrcinfo > .SRCINFO
+```
 
-Build on Ubuntu 24.04 (glibc 2.39 baseline), not the rolling-release Arch host.
-The AppImage bundles Python/Qt, but still needs a host KDE Plasma 6 session.
-Install `requirements-dev.txt` and `requirements-appimage.txt` in a build venv,
-then install this project. Supply verified, versioned appimagetool and type2
-runtime files; the script deliberately does not download mutable `continuous`
-assets or fetch a runtime implicitly.
+This generates the metadata AUR uses to display the package. Regenerate it after
+changing recipe metadata. Use a separate AUR Git checkout on its required
+`master` branch; the upstream GitHub branch remains `main`.
+
+Commit the PKGBUILD, `.SRCINFO`, required helpers, and packaging-source license.
+Keep the maintainer comment and MIT license. Leave source archives and built
+packages out of the AUR repository. Validate the initial submission before
+enabling automatic updates.
+
+## Build a candidate AppImage
+
+Build on Ubuntu 24.04 with its glibc 2.39 baseline. Install
+`requirements-dev.txt`, `requirements-appimage.txt`, and the project in a build
+venv. Supply versioned appimagetool and type2-runtime files with independently
+verified checksums, then run:
 
 ```sh
 APPIMAGETOOL=/absolute/path/to/appimagetool \
@@ -93,127 +144,56 @@ APPIMAGE_RUNTIME=/absolute/path/to/runtime-x86_64 \
 KDE_SHORTCUTS_PYTHON=.venv/bin/python scripts/build_appimage.sh
 ```
 
-The builder uses a PyInstaller directory bundle, checks for Wayland plugins,
-copies dependency license notices, and produces `dist/Plasma_Shortcut_Explorer-*.AppImage`.
-Before distributing, audit bundled license/source obligations, run
-`--appimage-extract-and-run --diagnose` outside KDE (expected exit 1 with JSON),
-and run GUI checks on all target desktops. Merely finding a Wayland plugin does
-not prove that all its shared-library dependencies resolve on another distro.
+The script writes `dist/Plasma_Shortcut_Explorer-*.AppImage`. It bundles a
+PyInstaller directory build, checks for Wayland plugins, and copies dependency
+license notices. The manual **Build candidate AppImage** workflow accepts the
+tool/runtime URLs and checksums as inputs.
 
-AppImage validation and publication are separate from native packaging. The
-build helper is provided, but no AppImage is release-qualified until those
-cross-distro checks and the bundle license review pass.
+Before publishing an AppImage, review bundled license and source obligations,
+check shared-library dependencies on target distributions, and test the GUI in
+Plasma. Outside KDE, `--appimage-extract-and-run --diagnose` should return 1 with
+JSON errors. The current helper does not establish portability; AppImage remains
+outside automatic release publication.
 
-## Publication
+## Validation record
 
-Use version tags matching pyproject.toml, RPM Version, Debian changelog, and
-AppStream metadata. Pushing a `v*` tag triggers `.github/workflows/release.yml`; the tag must match
-all version metadata (`vX.Y.Z`). A manual run with an existing tag is also
-available. Tests and coverage gates run before source and native builds. All
-Debian, Fedora, and Arch builds must pass. The publication job verifies that
-source, wheel, .deb, .rpm, and Arch assets exist, generates checksums, creates
-a temporary draft, uploads every asset, then automatically publishes it as the
-latest release. No approval step is required. A failed upload leaves a draft;
-a rerun can resume it. An already public release is not overwritten.
+The local suite passed 86 tests with 99.63% line and 98.33% branch coverage.
+The uncovered paths are the `__main__` wrapper and a defensive oversized-response
+check. Private-bus integration, offscreen UI smoke checks, wheel builds, desktop
+metadata validation, and actionlint passed.
 
-GitHub downloads are the selected distribution channel for Debian and Fedora.
-The workflow does not create apt/dnf repositories or submit to AUR. AUR
-publication still requires the maintainer account and an automation SSH key;
-that setup is pending. AppImage remains a separate candidate workflow.
+Earlier prototype package checks passed on these targets:
 
-Follow the [AUR submission guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines)
-for initial setup and subsequent automation. Register at
-https://aur.archlinux.org/register and add a dedicated public SSH key to the
-account. Check that the package is not already in the official repositories or
-maintained in AUR. Use a separate AUR Git checkout and its required `master`
-branch; the upstream GitHub repository remains on `main`. Generate PKGBUILD
-with the published source archive URL and checksum, regenerate `.SRCINFO` with
-`makepkg --printsrcinfo`, and commit only the recipe, metadata, required helpers,
-and packaging-source license. Do not commit source archives or built packages
-to AUR. Include the maintainer comment and retain the app's MIT license.
-Automatic submission must wait until this account/key setup and initial package
-validation are complete. Account registration availability does not affect
-GitHub package downloads.
-
-A GitHub release holding .deb/.rpm files provides downloads, not automatic
-package-manager updates. For updates, provision a signed apt repository (or an
-Ubuntu PPA), an RPM repository/COPR, and/or maintain the AUR recipe. Keep signing
-keys out of the repository and use protected CI environments. Publish checksums
-and signatures with the artifacts; checksums alone do not authenticate them.
-
-References: [Arch Python packaging](https://wiki.archlinux.org/title/Python_package_guidelines),
-[Debian pybuild](https://wiki.debian.org/Python/Pybuild),
-[Fedora Python macros](https://fedoraproject.org/wiki/Changes/DeprecateSetuppyMacros),
-[AppImage packaging](https://docs.appimage.org/packaging-guide/).
-
-## Checks completed in the development environment
-
-The automated suite currently passes 86 tests with 99.63% line coverage and
-98.33% branch coverage. All application modules are included; the uncovered
-application paths are the module's `__main__` wrapper and a defensive oversized-response check. The wire-format integration
-test passes on a private D-Bus session. A fresh read of the real Plasma service
-returned 124 assigned actions, zero errors, in 0.181 seconds.
-
-Native container validation completed successfully:
-
-| Target | Tests | Lines | Branches | Install/assets/diagnostics/removal |
+| Target | Tests | Line coverage | Branch coverage | Install/check/remove |
 | --- | --- | --- | --- | --- |
-| Current Arch | 39 passed | 99.62% | 98.57% | Passed |
-| Debian 13 | 39 passed | 99.25% | 98.78% | Passed |
-| Fedora 44 | 39 passed | 99.62% | 98.57% | Passed |
+| Arch | 39 | 99.62% | 98.57% | Passed |
+| Debian 13 | 39 | 99.25% | 98.78% | Passed |
+| Fedora 44 | 39 | 99.62% | 98.57% | Passed |
 
-The first Fedora install check caught an automatically generated PyPI Essentials
-requirement that the distro could not satisfy. The recipe now filters that
-requirement, explicitly depends on Fedora's python3-pyside6, and passed a fresh
-build and installation check. These are development package candidates, not
-published releases. Rebuild all artifacts together from the chosen immutable tag
-before publishing; local validation builds were iterative.
-The three GitHub workflows pass actionlint. AppImage tooling is a candidate build
-path, not a claim of a validated portable release. AppStream homepage metadata uses the intended repository URL and passes offline
-validation. CI also derives the URL from its actual repository.
+Those builds predate the public rename, settings, and updater. Rebuild from the
+final tag before publishing. The Fedora check caught an unwanted generated PyPI
+Essentials dependency; the recipe now filters it and requires distro PySide6.
 
-## KDE Python distribution guidance (checked 2026-10-18)
+## Packaging references
 
 KDE's [Python packaging tutorial](https://develop.kde.org/docs/getting-started/python/python-package/)
-uses pyproject.toml, setuptools, an entry point, desktop metadata, an icon, and
-AppStream metadata. A single source file or frozen executable is not required.
-Our package layout follows this approach; internal modules can remain separate
-regardless of the installation format.
+uses modular Python sources, `pyproject.toml`, an entry point, and desktop assets.
+The project follows that layout. Native packages use distro Python and Qt;
+they do not run pip during installation.
 
-KDE's [Python Flatpak tutorial](https://develop.kde.org/docs/getting-started/python/python-flatpak/)
-uses the KDE runtime and a PySide BaseApp (or PyQt BaseApp). The example's runtime
-version is illustrative, not a version pin to copy into a new release.
-Flatpak is a documented cross-distribution route, not the only allowed format.
-Kajongg, a KDE Python application, also documents
-[installation through distro packages](https://docs.kde.org/stable_kf6/en/kajongg/kajongg/kajongg.pdf).
-KDE's build infrastructure also supports
-[Craft-based AppImage jobs](https://blogs.kde.org/2024/01/30/farewell-binary-factory-add-craft-jobs-your-apps-kdes-gitlab-now/).
+KDE also documents [Python Flatpak packaging](https://develop.kde.org/docs/getting-started/python/python-flatpak/)
+and [Craft AppImage builds](https://blogs.kde.org/2024/01/30/farewell-binary-factory-add-craft-jobs-your-apps-kdes-gitlab-now/).
+A Flatpak would need scoped KGlobalAccel D-Bus access and a tested way to open
+host settings. The current QProcess handoff does not work through Flatpak's
+default sandbox. See [Flatpak permissions](https://docs.flatpak.org/en/latest/sandbox-permissions.html#d-bus-access).
+There is no tested Flatpak manifest here.
 
-For this host-integrated utility, we recommend native packages first. A Flatpak
-would need explicitly scoped KGlobalAccel D-Bus permission and a tested host
-settings-editor handoff. Its default sandbox does not allow arbitrary host
-processes or services; the current QProcess invocation is not a Flatpak solution.
-See [Flatpak permissions](https://docs.flatpak.org/en/latest/sandbox-permissions.html#d-bus-access).
-There is no tested Flatpak manifest in this repository. AppImage remains an
-optional candidate format, not a KDE requirement.
+For native recipes, see [Arch Python packaging](https://wiki.archlinux.org/title/Python_package_guidelines),
+[Debian pybuild](https://wiki.debian.org/Python/Pybuild), and
+[Fedora Python macros](https://fedoraproject.org/wiki/Changes/DeprecateSetuppyMacros).
+For bundled builds, see the [AppImage packaging guide](https://docs.appimage.org/packaging-guide/).
 
-KDE's [Flatpak integration guidance](https://develop.kde.org/docs/packaging/flatpak/integration/#theming)
-also says to follow the system theme rather than hardcode an application theme.
-The settings page therefore has no appearance selector or persisted color settings.
-
-The native validation table above records the earlier prototype revision. The
-public package rename and Settings changes require fresh native builds before
-release; do not publish those older development artifacts under the new name.
-
-## In-app update discovery
-
-The app uses Qt Network asynchronously after opening its window. It queries
-only the public latest stable release, compares numeric three-part versions,
-and constructs download links for this repository. It never installs updates.
-Automatic requests are limited to once per day, including failed attempts;
-manual requests bypass that limit. Users can disable automatic checks in
-Settings. No shortcut data or credentials are sent. A timeout, malformed response,
-rate limit, or unavailable network does not prevent normal use. The update
-preference and cached release tag are stored in Qt's user settings, independently
-of Plasma shortcuts. Debian packages explicitly depend on Qt Network's Python
-module. The application version is checked against pyproject.toml at release time.
+Future apt or RPM update repositories need hosting and signing setup. COPR or
+an Ubuntu PPA are possible distribution-specific routes; they are not part of
+the current workflow. Keep signing keys in CI secrets and publish signatures
+when signing is configured. Checksums alone do not authenticate a download.

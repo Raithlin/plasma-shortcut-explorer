@@ -1,81 +1,76 @@
 # Installation
 
-## Arch Linux and EndeavourOS
+Use a native package from [GitHub Releases](https://github.com/Raithlin/plasma-shortcut-explorer/releases),
+or [install from source](#install-from-source). If release assets are not yet
+available, use the source installer. See the [requirements](README.md#requirements)
+for supported dependencies.
 
-Until AUR publishing is available, install the native Arch package from
-[GitHub Releases](https://github.com/Raithlin/plasma-shortcut-explorer/releases).
-An AUR account or helper is not required. The release workflow builds the
-`.pkg.tar.zst` package and tests installation and removal in an Arch container.
-See [requirements and tested desktop versions](README.md#requirements-and-compatibility)
-before installing. Arch validation currently targets x86-64 Plasma 6 systems.
+## Verify a download
 
-No release has been published yet. The steps below apply once release assets
-are available; the source installation below is available now.
-
-### Install a release package
-
-1. Download `plasma-shortcut-explorer-<version>-<pkgrel>-any.pkg.tar.zst` and
-   `SHA256SUMS` from the same GitHub release into a dedicated directory.
-2. In that directory, check the downloaded package:
-
-   ```sh
-   sha256sum --check --ignore-missing SHA256SUMS
-   ```
-
-   Confirm that the package filename is reported as `OK`. Other release assets
-   do not need to be downloaded.
-3. Bring the system up to date using Arch's normal full-upgrade procedure:
-
-   ```sh
-   sudo pacman -Syu
-   ```
-
-4. Install the downloaded package using its exact filename. For example, for
-   version 0.1.0, package revision 1:
-
-   ```sh
-   sudo pacman -U ./plasma-shortcut-explorer-0.1.0-1-any.pkg.tar.zst
-   ```
-
-   Pacman resolves required dependencies from the configured repositories.
-   For the settings-editor handoff, install the optional System Settings package
-   if your Plasma installation does not already provide it:
-
-   ```sh
-   sudo pacman -S --needed systemsettings
-   ```
-
-Launch **Plasma Shortcut Explorer** from the application menu or run
-`plasma-shortcut-explorer`. Then [assign a shortcut you will remember](README.md#assign-a-shortcut).
-This package does not register a shortcut or add autostart entries.
-
-Pacman's local package installation and Arch's full-upgrade guidance are
-documented in the [ArchWiki](https://wiki.archlinux.org/title/Pacman) and
-[system maintenance guidance](https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported).
-
-### Upgrade
-
-The app's asynchronous update check links to newer GitHub releases. Download
-the new package and its `SHA256SUMS`, verify it, and repeat `pacman -U` with the
-new filename. Pacman upgrades the existing installation.
-
-This is a locally installed package, so `pacman -Syu` alone will not fetch new
-app releases from GitHub. Automatic package-manager updates can be added later
-through AUR or a package repository. Python upgrades on rolling Arch may also
-require an updated package built for the current system Python.
-
-### Remove
-
-Remove any launch shortcut and window rule you created, then run:
+Download the package for your distribution and `SHA256SUMS` from the same
+release. Put both files in a separate directory, then run:
 
 ```sh
-sudo pacman -R plasma-shortcut-explorer
+sha256sum --check --ignore-missing SHA256SUMS
 ```
 
-## Manual installation from source
+The package filename should appear with `OK`. You do not need to download the
+other release assets.
 
-For a per-user installation without a native package, install Git, Python 3.11+
-with venv support, and the Qt Wayland system runtime, then:
+The package commands below use version 0.1.0 as an example. Substitute the exact
+filename you downloaded.
+
+## Arch Linux
+
+Download the `.pkg.tar.zst` package. You do not need an AUR account or helper.
+Keep Arch up to date before installing:
+
+```sh
+sudo pacman -Syu
+```
+
+Pacman upgrades installed system packages. Then install the download:
+
+```sh
+sudo pacman -U ./plasma-shortcut-explorer-0.1.0-1-any.pkg.tar.zst
+```
+
+Pacman installs the app and resolves its dependencies. If Plasma's shortcut
+editor is missing, install the optional System Settings package:
+
+```sh
+sudo pacman -S --needed systemsettings
+```
+
+This adds the editor used by the app's settings buttons. Arch package checks
+currently target x86-64 Plasma 6 systems. See the ArchWiki for
+[local package installation](https://wiki.archlinux.org/title/Pacman) and
+[full system upgrades](https://wiki.archlinux.org/title/System_maintenance#Partial_upgrades_are_unsupported).
+
+## Debian 13
+
+Download the `.deb` package and install it:
+
+```sh
+sudo apt install ./plasma-shortcut-explorer_0.1.0-1_all.deb
+```
+
+Apt installs the app and resolves its dependencies from your configured repositories.
+
+## Fedora 44
+
+Download the `.rpm` package and install it:
+
+```sh
+sudo dnf install ./plasma-shortcut-explorer-0.1.0-1.fc44.noarch.rpm
+```
+
+Dnf installs the app and resolves its dependencies from your configured repositories.
+
+## Install from source
+
+Install Git, Python 3.11+ with venv support, and the Qt Wayland system runtime.
+Then run, without sudo:
 
 ```sh
 git clone https://github.com/Raithlin/plasma-shortcut-explorer.git
@@ -83,46 +78,72 @@ cd plasma-shortcut-explorer
 ./scripts/install.sh
 ```
 
-This installs the current development checkout. To use a release instead,
-download and extract its `plasma_shortcut_explorer-<version>.tar.gz` source asset
-and run `./scripts/install.sh` from the extracted directory.
+The installer downloads Python dependencies into a dedicated virtual environment
+and adds a launcher, desktop entry, icon, and AppStream metadata for your user.
+It installs the current development checkout. To install a release, extract its
+`plasma_shortcut_explorer-<version>.tar.gz` asset and run `./scripts/install.sh`
+from that directory instead.
 
-The installer uses a dedicated virtual environment under
-`${XDG_DATA_HOME:-~/.local/share}/plasma-shortcut-explorer/venv`, creates launchers
-in `~/.local/bin`, and installs the desktop entry, icon, and AppStream metadata.
-It downloads Python dependencies into that environment. It does not require
-root or install into system Python. Ensure `~/.local/bin` is on your `PATH` to
-use the terminal command.
+The environment lives under
+`${XDG_DATA_HOME:-~/.local/share}/plasma-shortcut-explorer/venv`.
+Add `~/.local/bin` to your `PATH` to use the terminal command. The application
+menu entry works independently of that setting.
 
-Update by obtaining a newer checkout or release source archive and rerunning
-the installer. Remove a per-user installation before switching to the native
-package so its launcher and desktop entry do not shadow the packaged versions.
+Remove a per-user installation before switching to a native package so its
+launcher and desktop entry do not shadow the package's versions.
+
+## Open the app
+
+Choose **Plasma Shortcut Explorer** from the application menu or run
+`plasma-shortcut-explorer`. The overlay opens with search focused.
+[Assign a shortcut you will remember](README.md#assign-a-shortcut) to open it
+from the keyboard.
+
+### Window placement
+
+On Wayland, open **System Settings → Window Management → Window Rules** and
+use **Detect Window Properties** to match the explorer. Set
+**Initial placement → Force → Centered** and, if available,
+**Screen → Apply Initially → Active screen**. Labels vary between Plasma versions.
+Test your launch shortcut from each monitor; KWin decides the final placement.
+
+## Upgrade
+
+The app's update check links to newer GitHub releases. Download and verify the
+new package, then repeat the install command with its filename. The package
+manager upgrades the existing installation.
+
+GitHub downloads do not add an apt, dnf, or pacman update repository. System
+upgrades alone will not fetch new app releases. On rolling Arch, a Python
+upgrade may also require a package built for the new Python version.
+
+For a source installation, get a newer checkout or source archive and rerun
+`./scripts/install.sh`. The installer updates the per-user environment.
 
 ## Uninstall a per-user installation
 
-Run from the checkout or extracted source archive, without sudo:
+From the checkout or extracted archive, run without sudo:
 
 ```sh
 ./scripts/uninstall.sh
 ```
 
-The installer also saves a standalone copy, so the source checkout is not needed:
+The script removes the app environment, desktop assets, and launcher symlinks.
+The installer also saves a standalone copy. If you deleted the checkout, run:
 
 ```sh
 sh "${XDG_DATA_HOME:-$HOME/.local/share}/plasma-shortcut-explorer/uninstall.sh"
 ```
 
-Use `--dry-run` to preview removal. Add `--purge` to also remove the saved update
-preferences and cached release information. The script respects `XDG_DATA_HOME`
-and `XDG_CONFIG_HOME`, removes the app environment and desktop assets, and cleans
-up launcher symlinks created by current or prototype installers. Unrelated
-launchers and shared Python/Qt packages are preserved.
-
-Remove your launch shortcut and any window rule in Plasma System Settings.
+This performs the same removal. Use `--dry-run` to list what it would remove,
+or `--purge` to also remove update preferences and cached release information.
+Both scripts respect your XDG data location; the uninstaller also respects the
+XDG config location. It leaves unrelated launchers and shared Python/Qt packages
+in place.
 
 ## Uninstall a native package
 
-Use the manager that installed the package:
+Use the manager that installed the app:
 
 ```sh
 sudo pacman -R plasma-shortcut-explorer       # Arch
@@ -130,4 +151,5 @@ sudo apt remove plasma-shortcut-explorer    # Debian
 sudo dnf remove plasma-shortcut-explorer    # Fedora
 ```
 
-The per-user uninstall script does not remove system packages.
+The selected manager removes the package. After either a per-user or native
+uninstall, remove your launch shortcut and any window rule in Plasma System Settings.
