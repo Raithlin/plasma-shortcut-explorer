@@ -6,38 +6,13 @@ list, config-file edits, X11 tools, or automatic shortcut registration.
 
 ## Requirements and compatibility
 
-This application is for **KDE Plasma 6 on Linux**. GNOME, other desktops, and
-Plasma 5 are not supported. It reads Plasma's KGlobalAccel service; installing
-Qt alone does not provide the shortcut data.
+- KDE Plasma 6.0+ on Linux, with KGlobalAccel and a user D-Bus session
+- Python 3.11+, PySide6 6.6–6.x (Qt Widgets and Qt Network), and dbus-next 0.2.3–0.2.x
+- Qt 6 Wayland support for Wayland sessions
+- Plasma System Settings for editing shortcuts
 
-| Component | Requirement |
-| --- | --- |
-| Desktop | Plasma 6.0 or newer is the API baseline; see tested versions below |
-| Shortcut service | KDE 6 KGlobalAccel daemon (`kglobalacceld`), running in your desktop session |
-| Session bus | A working user D-Bus session with `org.kde.kglobalaccel` available |
-| Python | 3.11 or newer for source installs and native packages |
-| Python Qt bindings | PySide6 Essentials 6.6 or newer, below 7, providing Qt Widgets and Qt Network; distro packages may split the modules differently |
-| D-Bus bindings | `dbus-next` 0.2.3 or newer, below 0.3 |
-| Wayland runtime | The matching Qt 6 Wayland platform plugin and its system libraries |
-| Shortcut editing | Plasma System Settings with the Shortcuts module (`kcm_keys`); `kcmshell6` can also open it |
-
-**Minimum API version is not a fully tested minimum desktop version.** The three
-discovery methods are present in the
-[KGlobalAccel 6.0.0 interface](https://github.com/KDE/kglobalaccel/blob/v6.0.0/src/org.kde.KGlobalAccel.xml).
-Live discovery and GUI smoke checks have been performed on **Plasma 6.8,
-KGlobalAccel/Frameworks 6.31, and Qt/PySide6 6.12**, on EndeavourOS with Wayland.
-Older Plasma 6 releases still need live validation. X11 sessions have not been
-validated; Wayland activation and monitor placement also need the manual checks
-described below. A native package build passing in a container does not establish
-that the desktop UI works on that distribution.
-
-Native packaging currently targets rolling Arch/EndeavourOS, Debian 13, and
-Fedora 44. These are build targets, not a claim of compatibility with every
-Debian/Ubuntu or Fedora release. See [RELEASES.md](RELEASES.md) for package
-validation status. Package managers install the declared runtime dependencies;
-source installations also need the system Qt platform libraries. System Settings
-is optional for browsing, but required for the editing handoff unless
-`kcmshell6` and the Shortcuts module are available.
+Tested on Plasma 6.8 under Wayland. Package targets: Arch/EndeavourOS,
+Debian 13, and Fedora 44. See [INSTALL.md](INSTALL.md) for installation.
 
 ## User installation
 
