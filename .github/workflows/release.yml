@@ -50,6 +50,10 @@ jobs:
           python3 - <<'PY'
           from hashlib import sha256
           from pathlib import Path
+          # GitHub rewrites leading-dot filenames; choose the public name first.
+          srcinfo = Path('artifacts/.SRCINFO')
+          if srcinfo.exists():
+              srcinfo.rename(srcinfo.with_name('plasma-shortcut-explorer.SRCINFO'))
           files = sorted(p for p in Path('artifacts').iterdir() if p.is_file())
           for suffix in ('.tar.gz', '.whl', '.deb', '.rpm', '.pkg.tar.zst'):
               assert any(p.name.endswith(suffix) for p in files), f'Missing release asset: {suffix}'

@@ -1,6 +1,6 @@
 # Release engineering
 
-Version 0.1.0 is the first release target. GitHub Releases hosts the source
+Version 0.1.0 is the first release. GitHub Releases hosts the source
 archive, wheel, and native packages. AUR publishing and AppImage qualification
 remain pending.
 
@@ -157,10 +157,15 @@ outside automatic release publication.
 
 ## Validation record
 
-The local suite passed 86 tests with 99.63% line and 98.33% branch coverage.
+The local suite passed 87 tests with 99.63% line and 98.33% branch coverage.
 The uncovered paths are the `__main__` wrapper and a defensive oversized-response
 check. Private-bus integration, offscreen UI smoke checks, wheel builds, desktop
 metadata validation, and actionlint passed.
+
+The v0.1.0 release workflow passed native package tests and installation/removal
+checks on Arch, Debian 13, and Fedora 44. All published assets match their
+SHA-256 checksums. Release metadata uses a non-hidden filename so GitHub does
+not rename it during upload.
 
 Earlier prototype package checks passed on these targets:
 

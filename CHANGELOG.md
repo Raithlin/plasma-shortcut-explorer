@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Normalize the release metadata filename before generating checksums.
+
 ## 0.1.0 (2026-10-18)
 
 - Read assigned global shortcuts from KDE's KGlobalAccel service.

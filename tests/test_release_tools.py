@@ -4,10 +4,31 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import textwrap
 
 import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
+
+
+def test_release_manifest_uses_public_asset_filenames(tmp_path):
+    """GitHub renames leading-dot assets; normalize before calculating checksums."""
+    from hashlib import sha256
+    artifacts = tmp_path / "artifacts"
+    artifacts.mkdir()
+    for name in ("source.tar.gz", "app.whl", "app.deb", "app.rpm", "app.pkg.tar.zst", ".SRCINFO"):
+        (artifacts / name).write_text(name)
+    workflow = (ROOT / ".github/workflows/release.yml").read_text()
+    step = workflow.split("- name: Generate checksums\n", 1)[1]
+    script = textwrap.dedent(step.split("python3 - <<'PY'\n", 1)[1].split("\n          PY", 1)[0])
+    process = subprocess.run([sys.executable, "-c", script], cwd=tmp_path, capture_output=True, text=True)
+    assert process.returncode == 0, process.stderr
+    assert not (artifacts / ".SRCINFO").exists()
+    assert (artifacts / "plasma-shortcut-explorer.SRCINFO").exists()
+    for line in (artifacts / "SHA256SUMS").read_text().splitlines():
+        digest, name = line.split("  ", 1)
+        assert not name.startswith(".")
+        assert sha256((artifacts / name).read_bytes()).hexdigest() == digest
 
 
 @pytest.mark.parametrize("lines,branches,status", [(95, 95, 0), (100, 94, 1), (94, 100, 1)])
