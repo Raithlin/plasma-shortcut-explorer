@@ -11,12 +11,12 @@ list, config-file edits, X11 tools, or automatic shortcut registration.
 - Qt 6 Wayland support for Wayland sessions
 - Plasma System Settings for editing shortcuts
 
-Tested on Plasma 6.8 under Wayland. Package targets: Arch/EndeavourOS,
+Tested on Plasma 6.8 under Wayland. Package targets: Archlinux,
 Debian 13, and Fedora 44. See [INSTALL.md](INSTALL.md) for installation.
 
 ## User installation
 
-See [INSTALL.md](INSTALL.md) for manual Arch/EndeavourOS package installation,
+See [INSTALL.md](INSTALL.md) for manual Archlinux package installation,
 checksum verification, upgrades, removal, and the source installation fallback.
 Arch packages will be available as GitHub release downloads while AUR publishing
 is pending.
