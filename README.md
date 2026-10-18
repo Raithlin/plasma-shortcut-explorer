@@ -113,18 +113,15 @@ from publishing apt/dnf update repositories or submitting a recipe to AUR.
 
 ## Uninstall
 
-Remove the launch shortcut you created in System Settings first. Then:
+For a per-user installation:
 
 ```sh
-base="${XDG_DATA_HOME:-$HOME/.local/share}"
-rm -f "$HOME/.local/bin/plasma-shortcut-explorer"
-rm -f "$base/applications/org.kde.shortcutexplorer.desktop"
-rm -f "$base/icons/hicolor/scalable/apps/org.kde.shortcutexplorer.svg"
-rm -f "$base/metainfo/org.kde.shortcutexplorer.metainfo.xml"
-rm -rf "$base/plasma-shortcut-explorer"
+./scripts/uninstall.sh
 ```
 
-Remove any window rule you added. The utility stores no shortcut configuration.
+Use `--dry-run` to preview removal or `--purge` to also remove update preferences.
+Remove your launch shortcut and any window rule in Plasma System Settings.
+For native packages, use your package manager; see [INSTALL.md](INSTALL.md#uninstall-a-native-package).
 
 ## Development
 

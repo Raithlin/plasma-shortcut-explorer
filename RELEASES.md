@@ -148,7 +148,7 @@ References: [Arch Python packaging](https://wiki.archlinux.org/title/Python_pack
 
 ## Checks completed in the development environment
 
-The automated suite currently passes 79 tests with 99.63% line coverage and
+The automated suite currently passes 86 tests with 99.63% line coverage and
 98.33% branch coverage. All application modules are included; the uncovered
 application paths are the module's `__main__` wrapper and a defensive oversized-response check. The wire-format integration
 test passes on a private D-Bus session. A fresh read of the real Plasma service

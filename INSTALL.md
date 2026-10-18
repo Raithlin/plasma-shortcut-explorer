@@ -95,6 +95,39 @@ root or install into system Python. Ensure `~/.local/bin` is on your `PATH` to
 use the terminal command.
 
 Update by obtaining a newer checkout or release source archive and rerunning
-the installer. Follow the README's [per-user removal instructions](README.md#uninstall)
-to uninstall. Remove a per-user installation before switching to the native
+the installer. Remove a per-user installation before switching to the native
 package so its launcher and desktop entry do not shadow the packaged versions.
+
+## Uninstall a per-user installation
+
+Run from the checkout or extracted source archive, without sudo:
+
+```sh
+./scripts/uninstall.sh
+```
+
+The installer also saves a standalone copy, so the source checkout is not needed:
+
+```sh
+sh "${XDG_DATA_HOME:-$HOME/.local/share}/plasma-shortcut-explorer/uninstall.sh"
+```
+
+Use `--dry-run` to preview removal. Add `--purge` to also remove the saved update
+preferences and cached release information. The script respects `XDG_DATA_HOME`
+and `XDG_CONFIG_HOME`, removes the app environment and desktop assets, and cleans
+up launcher symlinks created by current or prototype installers. Unrelated
+launchers and shared Python/Qt packages are preserved.
+
+Remove your launch shortcut and any window rule in Plasma System Settings.
+
+## Uninstall a native package
+
+Use the manager that installed the package:
+
+```sh
+sudo pacman -R plasma-shortcut-explorer       # Arch
+sudo apt remove plasma-shortcut-explorer    # Debian
+sudo dnf remove plasma-shortcut-explorer    # Fedora
+```
+
+The per-user uninstall script does not remove system packages.

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Add a per-user uninstaller with dry-run and preference-purge options; save a
+  standalone copy during installation.
 - Remove the `kde-shortcuts` command alias; use `plasma-shortcut-explorer`.
 - Guide users to choose a memorable launch shortcut; Meta+K is only a suggestion.
 - Check for newer stable GitHub releases asynchronously, with daily automatic

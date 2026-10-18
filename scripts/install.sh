@@ -18,4 +18,5 @@ fi
 sed "s|^Exec=plasma-shortcut-explorer|Exec=\"$venv/bin/plasma-shortcut-explorer\"|" data/org.kde.shortcutexplorer.desktop > "$base/applications/org.kde.shortcutexplorer.desktop"
 cp data/org.kde.shortcutexplorer.svg "$base/icons/hicolor/scalable/apps/"
 cp data/org.kde.shortcutexplorer.metainfo.xml "$base/metainfo/"
+cp scripts/uninstall.sh "$base/plasma-shortcut-explorer/uninstall.sh"
 printf 'Installed. Assign a shortcut you will remember in System Settings → Keyboard → Shortcuts.\n'
