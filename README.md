@@ -41,6 +41,11 @@ is optional for browsing, but required for the editing handoff unless
 
 ## User installation
 
+See [INSTALL.md](INSTALL.md) for manual Arch/EndeavourOS package installation,
+checksum verification, upgrades, removal, and the source installation fallback.
+Arch packages will be available as GitHub release downloads while AUR publishing
+is pending.
+
 From this checkout, run `./scripts/install.sh`. It builds a dedicated environment
 under `${XDG_DATA_HOME:-~/.local/share}/plasma-shortcut-explorer/venv`, installs a
 launcher in `~/.local/bin`, and adds a desktop entry and icon. No root needed.
