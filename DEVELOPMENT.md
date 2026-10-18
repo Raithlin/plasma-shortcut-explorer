@@ -51,8 +51,8 @@ KDE_SHORTCUTS_PYTHON=.venv/bin/python scripts/test.sh -q
 
 The runner starts a private D-Bus session, runs pytest with Qt's offscreen
 backend, and reports coverage. Both line and branch coverage must reach 95%.
-All application modules count toward those thresholds. Plain pytest skips the
-private-bus integration test.
+All application modules count toward those thresholds. The integration test
+starts its own private D-Bus daemon, including when run with plain pytest.
 
 To inspect coverage in a browser, run:
 

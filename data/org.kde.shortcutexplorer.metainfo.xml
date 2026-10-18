@@ -20,6 +20,11 @@
     <name>Plasma Shortcut Explorer contributors</name>
   </developer>
   <releases>
+    <release version="0.1.1" type="stable" date="2026-10-18">
+      <description>
+        <p>Bound shortcut discovery and improve test isolation and uninstall safety.</p>
+      </description>
+    </release>
     <release version="0.1.0" type="development" date="2026-10-18">
       <description>
         <p>Initial shortcut discovery and searchable overlay.</p>

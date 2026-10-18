@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.1.1 (2026-10-18)
+
+- Bound shortcut discovery to 20 seconds and retain results collected before the deadline.
+- Run the mock KGlobalAccel service only on a private D-Bus daemon, including when
+  its integration test is invoked directly.
+- Preserve current and legacy installation directories when their entry point is
+  missing or the directory cannot be verified.
 - Normalize the release metadata filename before generating checksums.
 
 ## 0.1.0 (2026-10-18)

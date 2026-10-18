@@ -43,10 +43,10 @@ prove that a handler is running. Application-local shortcuts and bindings
 managed outside KGlobalAccel fall outside this API.
 
 Discovery runs in a QThread. A five-second timeout bounds connection setup and
-each request. A failed action or component leaves other results available and
-adds a diagnostic. Refresh and each launch read the service again; the app does
-not persist shortcut results. Sequential calls keep discovery simple but may
-increase startup time for large registries.
+each request, while a 20-second overall deadline bounds the full scan. A failed
+action or component leaves other results available and adds a diagnostic. The
+overall deadline also preserves results already collected. Refresh and each
+launch read the service again; the app does not persist shortcut results.
 
 ## Launch and close
 

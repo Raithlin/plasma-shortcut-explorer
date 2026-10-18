@@ -11,6 +11,20 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 
 
+def test_test_runner_cannot_skip_private_bus_with_inherited_flag(tmp_path):
+    stub = tmp_path / "dbus-run-session"
+    log = tmp_path / "bus-arguments"
+    stub.write_text('#!/bin/sh\nprintf "%s\\n" "$@" > "$BUS_ARGUMENTS_LOG"\n')
+    stub.chmod(0o755)
+    env = dict(os.environ, PATH=str(tmp_path) + os.pathsep + os.environ["PATH"],
+               BUS_ARGUMENTS_LOG=str(log), KDE_SHORTCUTS_ISOLATED_BUS="1",
+               DBUS_SESSION_BUS_ADDRESS="unix:path=/tmp/inherited-session-bus")
+    process = subprocess.run(["sh", str(ROOT / "scripts/test.sh"), "-q"], env=env,
+                             capture_output=True, text=True)
+    assert process.returncode == 0, process.stderr
+    assert log.read_text().splitlines()[:3] == ["--", "sh", "-eu"]
+
+
 def test_release_manifest_uses_public_asset_filenames(tmp_path):
     """GitHub renames leading-dot assets; normalize before calculating checksums."""
     from hashlib import sha256

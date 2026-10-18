@@ -106,6 +106,21 @@ def test_timeout_cleans_up():
     assert bus.disconnected
 
 
+def test_overall_deadline_keeps_partial_results_and_disconnects():
+    class SlowSecondAction(Bus):
+        async def call(self, message):
+            if message.member == "shortcutKeys" and message.body[0][1] == "stalled":
+                await asyncio.sleep(10)
+            return await super().call(message)
+
+    actions = [ACTION, ["example", "stalled", "Example", "Stalled"]]
+    bus = SlowSecondAction(actions=actions)
+    result = asyncio.run(discover(lambda: bus, timeout=1, overall_timeout=0.02))
+    assert len(result.rows) == 1
+    assert result.errors == ["KDE shortcut discovery exceeded 0.02s overall"]
+    assert bus.disconnected
+
+
 def test_connect_timeout_cleans_up():
     class SlowConnect(Bus):
         async def connect(self):

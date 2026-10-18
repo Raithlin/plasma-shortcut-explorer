@@ -1,3 +1,10 @@
+plasma-shortcut-explorer (0.1.1-1) unstable; urgency=medium
+
+  * Bound shortcut discovery and preserve partial results on timeout.
+  * Isolate the mock D-Bus service and preserve unverified install directories.
+
+ -- Stephen Metcalfe <raithlin@outlook.com>  Sun, 18 Oct 2026 23:30:00 +0200
+
 plasma-shortcut-explorer (0.1.0-1) unstable; urgency=medium
 
   * Initial packaging of the shortcut explorer.

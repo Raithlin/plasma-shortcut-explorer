@@ -1,6 +1,7 @@
 """Exercise removal in disposable homes; never touch the real installation."""
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 
@@ -18,7 +19,8 @@ def installation(tmp_path):
     home.mkdir()
     appdir = data / "plasma-shortcut-explorer"
     appdir.mkdir(parents=True)
-    (appdir / "venv").mkdir()
+    (appdir / "venv/bin").mkdir(parents=True)
+    (appdir / "venv/bin/plasma-shortcut-explorer").write_text("installed entry point")
     assets = [data / "applications/org.kde.shortcutexplorer.desktop",
               data / "icons/hicolor/scalable/apps/org.kde.shortcutexplorer.svg",
               data / "metainfo/org.kde.shortcutexplorer.metainfo.xml"]
@@ -50,7 +52,8 @@ def test_removes_installation_preserves_preferences_and_external_data(installati
     precious.write_text("keep me")
     (appdir / "external").symlink_to(external, target_is_directory=True)
     olddir = appdir.parent / "kde-shortcut-explorer"
-    olddir.mkdir()
+    (olddir / "venv/bin").mkdir(parents=True)
+    (olddir / "venv/bin/kde-shortcuts").write_text("legacy entry point")
     old_launcher = launcher.with_name("kde-shortcuts")
     old_launcher.symlink_to(olddir / "venv/bin/kde-shortcuts")
     process = run(env)
@@ -102,14 +105,29 @@ def test_help_bad_options_and_relative_paths_do_not_remove_anything(installation
 
 def test_app_directory_symlink_is_not_followed(installation, tmp_path):
     env, appdir, assets, launcher, preference, unrelated = installation
-    (appdir / "venv").rmdir()
-    appdir.rmdir()
+    shutil.rmtree(appdir)
     external = tmp_path / "other directory"
     external.mkdir()
     (external / "keep").write_text("data")
     appdir.symlink_to(external, target_is_directory=True)
     assert run(env).returncode == 0
-    assert not appdir.is_symlink() and (external / "keep").exists()
+    assert appdir.is_symlink() and (external / "keep").exists()
+
+
+def test_unverified_installation_directories_are_preserved(installation):
+    env, appdir, assets, launcher, preference, unrelated = installation
+    (appdir / "venv/bin/plasma-shortcut-explorer").unlink()
+    current_data = appdir / "my-work.txt"
+    current_data.write_text("keep current")
+    olddir = appdir.parent / "kde-shortcut-explorer"
+    olddir.mkdir()
+    legacy_data = olddir / "my-work.txt"
+    legacy_data.write_text("keep legacy")
+    process = run(env)
+    assert process.returncode == 0
+    assert current_data.read_text() == "keep current"
+    assert legacy_data.read_text() == "keep legacy"
+    assert process.stderr.count("Preserving unverified installation directory") == 2
 
 
 def test_installer_saves_a_working_standalone_uninstaller(tmp_path):

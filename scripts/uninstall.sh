@@ -53,15 +53,36 @@ remove_file "$base/metainfo/org.kde.shortcutexplorer.metainfo.xml"
 if "$purge"; then
     remove_file "$config/Raithlin/PlasmaShortcutExplorer.conf"
 fi
-for directory in "$appdir" "$old_appdir"; do
-    if [ -e "$directory" ] || [ -L "$directory" ]; then
-        if "$dry_run"; then
-            printf 'Would remove: %s\n' "$directory"
-        else
-            rm -rf -- "$directory"
-        fi
+remove_installation_dir() {
+    directory=$1
+    shift
+    if [ ! -e "$directory" ] && [ ! -L "$directory" ]; then
+        return
     fi
-done
+    # A known path alone does not prove this installer owns its contents.
+    if [ -L "$directory" ] || [ ! -d "$directory" ]; then
+        printf 'Preserving unverified installation directory: %s\n' "$directory" >&2
+        return
+    fi
+    owned=false
+    for marker in "$@"; do
+        if [ -f "$directory/$marker" ] && [ ! -L "$directory/$marker" ]; then
+            owned=true
+            break
+        fi
+    done
+    if ! "$owned"; then
+        printf 'Preserving unverified installation directory: %s\n' "$directory" >&2
+        return
+    fi
+    if "$dry_run"; then
+        printf 'Would remove: %s\n' "$directory"
+    else
+        rm -rf -- "$directory"
+    fi
+}
+remove_installation_dir "$appdir" venv/bin/plasma-shortcut-explorer
+remove_installation_dir "$old_appdir" venv/bin/kde-shortcuts venv/bin/plasma-shortcut-explorer
 if ! "$dry_run"; then
     printf 'Per-user installation removed. Remove any launch shortcut or window rule in Plasma System Settings.\n'
 fi
