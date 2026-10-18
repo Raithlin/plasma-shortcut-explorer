@@ -1,5 +1,6 @@
 include README.md DESIGN.md AGENTS.md LICENSE requirements-dev.txt requirements-appimage.txt
 recursive-include data *.desktop *.svg *.xml
+recursive-include docs/screenshots *.png
 recursive-include scripts *.sh *.py
 recursive-include tests *.py
 recursive-include packaging *

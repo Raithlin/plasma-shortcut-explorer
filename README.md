@@ -4,6 +4,8 @@ Find the global shortcuts you have configured in KDE Plasma. Search by action,
 application, category, or key combination, then open Plasma's settings to edit a
 binding.
 
+![Search results with assigned keys and details for the selected action](docs/screenshots/search.png)
+
 ## Requirements
 
 - KDE Plasma 6.0+ on Linux, with `KGlobalAccel` and a user D-Bus session
@@ -43,6 +45,8 @@ Refresh or reopen the explorer after changing a binding.
 
 Select a row to see its details. **Edit in Plasma…** opens that application's
 shortcut settings. Find the named action there; selecting a row never runs it.
+
+![Settings with launch-shortcut configuration and update controls](docs/screenshots/settings.png)
 
 ### Updates
 
