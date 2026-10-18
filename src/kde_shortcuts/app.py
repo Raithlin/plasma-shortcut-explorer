@@ -4,7 +4,7 @@ import json
 import sys
 from dataclasses import asdict
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QLockFile, QStandardPaths
+from PySide6.QtCore import QLockFile, QStandardPaths, QTimer
 from .config import APP_ID
 from .discovery import discover
 
@@ -31,6 +31,7 @@ def main(argv=None):
     if args.settings:
         window.show_settings()
     window.show()
+    QTimer.singleShot(0, window.settings_page.update_checker.check)
     return app.exec()
 
 

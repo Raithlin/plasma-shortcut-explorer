@@ -82,6 +82,11 @@ class Overlay(QWidget):
         content.addLayout(bottom)
         self.settings_page = SettingsPage()
         self.pages.addWidget(self.settings_page)
+        self.update_banner = QPushButton()
+        self.update_banner.hide()
+        self.update_banner.clicked.connect(self.show_settings)
+        self.settings_page.update_checker.checked.connect(self.show_update)
+        layout.addWidget(self.update_banner)
         QShortcut(QKeySequence("Ctrl+,"), self, activated=self.show_settings)
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.input.setFocus)
         self.input.textChanged.connect(self.render)
@@ -91,6 +96,10 @@ class Overlay(QWidget):
         self.loader = Loader(self)
         self.loader.loaded.connect(self.loaded)
         self.reload()
+
+    def show_update(self, message, url):
+        self.update_banner.setText(message + " View in Settings…")
+        self.update_banner.setVisible(bool(url))
 
     def selection_changed(self, current, previous=None):
         row = current.data(0, Qt.ItemDataRole.UserRole) if current else None
@@ -203,6 +212,7 @@ class Overlay(QWidget):
     def closeEvent(self, event):
         # Keep the worker alive until completion; exit without destroying a running QThread.
         self.hide()
+        self.settings_page.update_checker.cancel()
         self.loader.requestInterruption()
         self.loader.finished.connect(QGuiApplication.quit)
         if not self.loader.isRunning():

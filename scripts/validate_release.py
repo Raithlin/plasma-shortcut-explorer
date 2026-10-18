@@ -14,6 +14,9 @@ def main():
     root = Path(__file__).resolve().parent.parent
     project = tomllib.loads((root / "pyproject.toml").read_text())["project"]
     version = project["version"]
+    package = (root / "src/kde_shortcuts/__init__.py").read_text()
+    if re.search(r'^__version__ = "([^"]+)"', package, re.M)[1] != version:
+        parser.error("Application version disagrees with pyproject.toml")
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
         parser.error("Use a three-part release version")
     if args.tag and args.tag != f"v{version}":

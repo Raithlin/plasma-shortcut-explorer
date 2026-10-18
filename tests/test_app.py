@@ -28,6 +28,8 @@ def test_help_never_starts_gui(capsys):
 
 @pytest.fixture
 def runtime(qapp, tmp_path, monkeypatch):
+    from kde_shortcuts.updates import UpdateChecker
+    monkeypatch.setattr(UpdateChecker, "check", lambda self: None)
     monkeypatch.setattr(app, "QApplication", lambda argv: qapp)
     monkeypatch.setattr(app.QStandardPaths, "writableLocation", lambda location: str(tmp_path))
     return tmp_path

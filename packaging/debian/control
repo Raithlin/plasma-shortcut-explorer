@@ -5,7 +5,7 @@ Maintainer: Stephen Metcalfe <raithlin@outlook.com>
 Build-Depends: debhelper-compat (= 13), dh-sequence-python3, pybuild-plugin-pyproject,
  python3-all (>= 3.11), python3-setuptools, python3-wheel, python3-pytest,
  python3-coverage, python3-dbus-next, python3-pyside6.qtwidgets (>= 6.6),
- python3-pyside6.qttest, dbus-daemon
+ python3-pyside6.qtnetwork (>= 6.6), python3-pyside6.qttest, dbus-daemon
 Homepage: https://github.com/Raithlin/plasma-shortcut-explorer
 Standards-Version: 4.7.0
 Rules-Requires-Root: no
@@ -13,7 +13,8 @@ Rules-Requires-Root: no
 Package: plasma-shortcut-explorer
 Architecture: all
 Depends: ${python3:Depends}, ${misc:Depends}, python3 (>= 3.11),
- python3-pyside6.qtwidgets (>= 6.6), python3-dbus-next (>= 0.2.3),
+ python3-pyside6.qtwidgets (>= 6.6), python3-pyside6.qtnetwork (>= 6.6),
+ python3-dbus-next (>= 0.2.3),
  qt6-wayland, kglobalacceld (>= 6.0)
 Recommends: systemsettings
 Description: Search the global shortcuts configured in KDE Plasma 6

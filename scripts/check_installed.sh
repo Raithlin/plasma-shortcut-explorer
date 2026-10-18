@@ -14,6 +14,7 @@ test "$status" -eq 1
 python3 - <<'PY'
 import json
 from PySide6.QtWidgets import QApplication
+from PySide6.QtNetwork import QNetworkAccessManager
 with open('/tmp/plasma-shortcut-explorer-package-diagnostics.json') as stream:
     result = json.load(stream)
 assert not result['rows'] and result['errors'], result
