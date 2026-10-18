@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 (2026-10-18)
 
 - Read assigned global shortcuts from KDE's KGlobalAccel service.
 - Search actions and key combinations in a categorized Qt overlay.
