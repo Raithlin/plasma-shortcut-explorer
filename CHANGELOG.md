@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Check for newer stable GitHub releases asynchronously, with daily automatic
+  checks, a Settings opt-out, manual checks, and release download links.
+- Publish tagged releases automatically after tests, coverage, and native
+  package builds pass; upload every asset before making the release public.
 - Add Settings with the current opening shortcut, a handoff to Plasma’s native
   shortcut editor, Ctrl+comma, --settings, and a desktop Settings action.
 - Follow Qt’s system appearance without custom palettes or a theme selector.

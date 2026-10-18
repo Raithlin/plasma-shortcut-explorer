@@ -151,3 +151,15 @@ components containing spaces open the general page instead. Errors stay inline.
 Verified against KDE's Plasma/6.8 sources:
 - https://github.com/KDE/plasma-desktop/blob/Plasma/6.8/kcms/keys/kcm_keys.cpp
 - https://github.com/KDE/systemsettings/blob/Plasma/6.8/app/main.cpp
+
+## Asynchronous update discovery
+
+Qt Network owns the HTTPS request; no blocking urllib call or network worker
+thread is used. app.main schedules the check after showing the window, separately
+from KGlobalAccel discovery. A ten-second total deadline and transfer timeout
+bound requests. Responses are limited to 64 KiB; stable three-part version tags
+are compared numerically. Release links are constructed from the fixed upstream
+repository, never from remote HTML. A pending request cannot be duplicated and
+is cancelled when the overlay closes. QSettings stores the automatic-check
+preference, last attempt, and cached release tag. Tests use isolated settings
+and controlled replies, without contacting GitHub or the real desktop service.

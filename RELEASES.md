@@ -107,9 +107,33 @@ cross-distro checks and the bundle license review pass.
 ## Publication
 
 Use version tags matching pyproject.toml, RPM Version, Debian changelog, and
-AppStream metadata. CI gates tests and creates artifacts. Release workflows
-prepare a **draft**, requiring human review before publication. They do not
-create apt/dnf repositories or submit to AUR.
+AppStream metadata. Pushing a `v*` tag triggers `.github/workflows/release.yml`; the tag must match
+all version metadata (`vX.Y.Z`). A manual run with an existing tag is also
+available. Tests and coverage gates run before source and native builds. All
+Debian, Fedora, and Arch builds must pass. The publication job verifies that
+source, wheel, .deb, .rpm, and Arch assets exist, generates checksums, creates
+a temporary draft, uploads every asset, then automatically publishes it as the
+latest release. No approval step is required. A failed upload leaves a draft;
+a rerun can resume it. An already public release is not overwritten.
+
+GitHub downloads are the selected distribution channel for Debian and Fedora.
+The workflow does not create apt/dnf repositories or submit to AUR. AUR
+publication still requires the maintainer account and an automation SSH key;
+that setup is pending. AppImage remains a separate candidate workflow.
+
+Follow the [AUR submission guidelines](https://wiki.archlinux.org/title/AUR_submission_guidelines)
+for initial setup and subsequent automation. Register at
+https://aur.archlinux.org/register and add a dedicated public SSH key to the
+account. Check that the package is not already in the official repositories or
+maintained in AUR. Use a separate AUR Git checkout and its required `master`
+branch; the upstream GitHub repository remains on `main`. Generate PKGBUILD
+with the published source archive URL and checksum, regenerate `.SRCINFO` with
+`makepkg --printsrcinfo`, and commit only the recipe, metadata, required helpers,
+and packaging-source license. Do not commit source archives or built packages
+to AUR. Include the maintainer comment and retain the app's MIT license.
+Automatic submission must wait until this account/key setup and initial package
+validation are complete. Account registration availability does not affect
+GitHub package downloads.
 
 A GitHub release holding .deb/.rpm files provides downloads, not automatic
 package-manager updates. For updates, provision a signed apt repository (or an
@@ -124,9 +148,9 @@ References: [Arch Python packaging](https://wiki.archlinux.org/title/Python_pack
 
 ## Checks completed in the development environment
 
-The automated suite currently passes 53 tests with 99.75% line coverage and
-98.89% branch coverage. All application modules are included; the only uncovered
-application path is the module's `__main__` wrapper. The wire-format integration
+The automated suite currently passes 79 tests with 99.63% line coverage and
+98.33% branch coverage. All application modules are included; the uncovered
+application paths are the module's `__main__` wrapper and a defensive oversized-response check. The wire-format integration
 test passes on a private D-Bus session. A fresh read of the real Plasma service
 returned 124 assigned actions, zero errors, in 0.181 seconds.
 
@@ -180,3 +204,16 @@ The settings page therefore has no appearance selector or persisted color settin
 The native validation table above records the earlier prototype revision. The
 public package rename and Settings changes require fresh native builds before
 release; do not publish those older development artifacts under the new name.
+
+## In-app update discovery
+
+The app uses Qt Network asynchronously after opening its window. It queries
+only the public latest stable release, compares numeric three-part versions,
+and constructs download links for this repository. It never installs updates.
+Automatic requests are limited to once per day, including failed attempts;
+manual requests bypass that limit. Users can disable automatic checks in
+Settings. No shortcut data or credentials are sent. A timeout, malformed response,
+rate limit, or unavailable network does not prevent normal use. The update
+preference and cached release tag are stored in Qt's user settings, independently
+of Plasma shortcuts. Debian packages explicitly depend on Qt Network's Python
+module. The application version is checked against pyproject.toml at release time.

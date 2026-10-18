@@ -1,3 +1,4 @@
+# Maintainer: Stephen Metcalfe <raithlin at outlook dot com>
 pkgname=plasma-shortcut-explorer
 pkgver=@VERSION@
 pkgrel=1
