@@ -1,10 +1,16 @@
 [Desktop Entry]
 Type=Application
-Name=Shortcut Explorer
+Name=Plasma Shortcut Explorer
 Comment=Search your configured KDE global shortcuts
-Exec=kde-shortcuts
+Exec=plasma-shortcut-explorer
 Icon=org.kde.shortcutexplorer
 Terminal=false
 Categories=Utility;Qt;KDE;
 StartupNotify=true
 StartupWMClass=org.kde.shortcutexplorer
+
+Actions=Settings;
+
+[Desktop Action Settings]
+Name=Settings
+Exec=plasma-shortcut-explorer --settings

@@ -1,23 +1,43 @@
 [build-system]
-requires = ["setuptools>=68"]
+requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "kde-shortcut-explorer"
+name = "plasma-shortcut-explorer"
 version = "0.1.0"
 description = "Explore the global shortcuts configured in KDE Plasma 6"
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = ["PySide6-Essentials>=6.6,<7", "dbus-next>=0.2.3,<0.3"]
 license = "MIT"
 
+[project.urls]
+Homepage = "https://github.com/Raithlin/plasma-shortcut-explorer"
+Repository = "https://github.com/Raithlin/plasma-shortcut-explorer"
+Issues = "https://github.com/Raithlin/plasma-shortcut-explorer/issues"
+
 [project.optional-dependencies]
-test = ["pytest>=8"]
+test = ["pytest>=8", "coverage>=7.6,<8"]
 
 [project.scripts]
 kde-shortcuts = "kde_shortcuts.app:main"
+plasma-shortcut-explorer = "kde_shortcuts.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]
+
+[tool.coverage.run]
+branch = true
+source = ["kde_shortcuts"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+
+[tool.setuptools.data-files]
+"share/applications" = ["data/org.kde.shortcutexplorer.desktop"]
+"share/icons/hicolor/scalable/apps" = ["data/org.kde.shortcutexplorer.svg"]
+"share/metainfo" = ["data/org.kde.shortcutexplorer.metainfo.xml"]

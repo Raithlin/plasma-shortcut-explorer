@@ -1,4 +1,4 @@
-# KDE Plasma Shortcut Explorer design
+# Plasma Shortcut Explorer design
 
 ## Phase 1: verified feasibility (2026-10-18)
 
@@ -98,3 +98,56 @@ environment; use the tested requirements snapshot for exact development versions
 Still manual: user-assigned Meta+K launch, conflict resolution in System Settings,
 focus-loss behavior during normal desktop use, and multi-monitor KWin rule placement.
 The 0.172-second figure measures discovery, not total Python/Qt cold-start latency.
+
+## Testing and release hardening
+
+Discovery now validates D-Bus reply signatures and four-field identities, preserves
+other results after malformed actions, and gives explicit connection/request timeout
+errors. The session bus connection itself is bounded as well as method calls.
+Shutdown connects worker completion before checking its running state, avoiding
+losing the quit event if the worker finishes during dismissal.
+
+The default test entry point is now `scripts/test.sh`, which creates a private
+session bus and runs the headless Qt interaction suite, lifecycle tests, discovery
+failure tests, and a real wire-format integration service. It enforces at least
+95% line and 95% branch coverage independently without application exclusions.
+This supersedes the initial seven-test validation snapshot above.
+
+Native packaging and candidate AppImage tooling are documented in RELEASES.md.
+Desktop assets are now part of the wheel as well as the source distribution.
+No shortcuts, user KDE configuration, or application identity are changed by this
+work. The org.kde development identity is retained for existing installations;
+choose an owned public namespace and plan migration before the first public release.
+
+## Settings and native appearance
+
+The app now has a Settings page (button, Ctrl+comma, --settings, desktop action).
+It displays a discovered `_launch` binding only when its component matches this
+application's preserved desktop ID. It never guesses from an unrelated custom
+command registration. The configuration button opens `systemsettings kcm_keys`,
+with `kcmshell6 kcm_keys` as fallback. The command is verified in the locally
+installed kcm_keys.desktop entry. Assignment and conflict resolution remain in
+Plasma's native editor; no additional global shortcut registration is introduced.
+
+Appearance belongs to the desktop. No app-specific theme preference, palette,
+stylesheet, or forced widget style is used. Font/layout adjustments and keycap
+frames use Qt widget APIs, preserving live palette changes. Tests cover both
+light and dark palette changes on the same running widget tree. On this machine,
+a read-only check of the real Wayland application reported Qt 6.12, Fusion style,
+and a dark palette (window #202326, foreground #fcfcfc). Native distro integration
+can provide Breeze; pip/AppImage Qt packaging must be checked separately.
+
+See RELEASES.md for KDE's Python distribution guidance and our packaging choice.
+
+## Selection and editing
+
+Mouse and keyboard selection show action, application, category, assigned keys,
+and guidance for finding the action in Plasma. Selection never executes actions
+or opens external windows. An explicit Edit in Plasma button opens kcm_keys
+with the component as --args. Plasma 6.8's KCM accepts a component identifier,
+not an action identifier. System Settings splits module arguments on spaces, so
+components containing spaces open the general page instead. Errors stay inline.
+
+Verified against KDE's Plasma/6.8 sources:
+- https://github.com/KDE/plasma-desktop/blob/Plasma/6.8/kcms/keys/kcm_keys.cpp
+- https://github.com/KDE/systemsettings/blob/Plasma/6.8/app/main.cpp

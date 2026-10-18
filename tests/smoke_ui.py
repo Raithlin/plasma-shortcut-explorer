@@ -22,7 +22,7 @@ def check():
     window.input.setText("no match")
     assert window.tree.topLevelItemCount() == 0
     window.input.clear()
-    window.grab().save("/tmp/kde-shortcuts-smoke.png")
+    window.grab().save("/tmp/plasma-shortcut-explorer-smoke.png")
     window.loaded(Discovery(errors=["Service unavailable"]))
     assert "Service unavailable" in window.status.text()
     completed = True

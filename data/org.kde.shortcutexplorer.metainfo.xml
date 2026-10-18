@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<component type="desktop-application">
+  <id>org.kde.shortcutexplorer</id>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <name>Plasma Shortcut Explorer</name>
+  <summary>Search your configured KDE global shortcuts</summary>
+  <description>
+    <p>Explore the keyboard shortcuts registered with KDE Plasma. Search actions,
+    applications, categories, and key combinations using a compact keyboard-first overlay.</p>
+    <p>Plasma Shortcut Explorer reads your current configuration without changing bindings.
+    It requires a running KDE Plasma 6 session and its KGlobalAccel service.</p>
+  </description>
+  <launchable type="desktop-id">org.kde.shortcutexplorer.desktop</launchable>
+  <provides>
+    <binary>plasma-shortcut-explorer</binary>
+  </provides>
+  <content_rating type="oars-1.1" />
+  <developer id="io.github.raithlin">
+    <name>Plasma Shortcut Explorer contributors</name>
+  </developer>
+  <releases>
+    <release version="0.1.0" type="development" date="2026-10-18">
+      <description>
+        <p>Initial shortcut discovery and searchable overlay.</p>
+      </description>
+    </release>
+  </releases>
+  <url type="homepage">https://github.com/Raithlin/plasma-shortcut-explorer</url>
+</component>
