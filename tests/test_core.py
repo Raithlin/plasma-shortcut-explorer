@@ -49,7 +49,9 @@ class FakeBus:
         data = {"allMainComponents": [["kwin", "KWin", "", ""]],
                 "allActionsForComponent": [["kwin", "Window Maximize", "KWin", "Maximize"]],
                 "shortcutKeys": [[[0x10000000 + 75]]]}
-        return Message(message_type=MessageType.METHOD_RETURN, reply_serial=1, body=[data[message.member]])
+        return Message(message_type=MessageType.METHOD_RETURN, reply_serial=1,
+                       signature="a(ai)" if message.member == "shortcutKeys" else "aas",
+                       body=[data[message.member]])
 
     def disconnect(self):
         self.disconnected = True
@@ -86,3 +88,21 @@ def test_cancelled_discovery():
     assert not result.rows
     assert not result.errors
     assert bus.disconnected
+
+
+def test_normalization_rejects_malformed_sequences():
+    import pytest
+    with pytest.raises(ValueError, match="four strokes"):
+        normalize([[[1, 2, 3, 4, 5]]])
+    with pytest.raises(ValueError, match="struct"):
+        normalize([[]])
+    assert normalize([]) == ()
+
+
+def test_unicode_and_multiple_search_tokens():
+    from kde_shortcuts.search import score
+    assert score("STRASSE", "Straße") == 0
+    assert score("  ", "anything") == 0
+    assert score("a a", "a") == 0
+    assert score("ac", "abc") is not None
+    assert search([], "anything") == []

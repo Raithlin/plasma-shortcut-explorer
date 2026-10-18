@@ -20,3 +20,6 @@ htmlcov/
 .aws/
 .agents/
 .codex/
+
+# Coverage JSON (keep separate from coverage.py database shards)
+/coverage.json

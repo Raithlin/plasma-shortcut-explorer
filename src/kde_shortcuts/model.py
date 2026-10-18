@@ -23,6 +23,8 @@ def category(component: str, action: str) -> str:
 def normalize(sequences) -> tuple[str, ...]:
     result = []
     for sequence in sequences:
+        if len(sequence) != 1:
+            raise ValueError("Expected a key sequence struct containing one integer array")
         values = [int(value) for value in sequence[0] if value]
         if not values:
             continue
