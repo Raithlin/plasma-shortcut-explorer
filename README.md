@@ -4,33 +4,40 @@ A small Python/Qt overlay showing **your configured KDE global shortcuts**.
 Search action names, apps, categories, and key combinations. No default shortcut
 list, config-file edits, X11 tools, or automatic shortcut registration.
 
-## Development
+## Requirements and compatibility
 
-A Plasma 6 session and a running user session bus are required for live results.
-Native packaging targets current Arch/EndeavourOS, Debian 13, and Fedora 44;
-see [RELEASES.md](RELEASES.md) for validation status. Install Python and the normal Qt Wayland runtime through your package
-manager if absent. Then:
+This application is for **KDE Plasma 6 on Linux**. GNOME, other desktops, and
+Plasma 5 are not supported. It reads Plasma's KGlobalAccel service; installing
+Qt alone does not provide the shortcut data.
 
-```sh
-python3 -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt
-.venv/bin/pip install --no-deps -e .
-.venv/bin/plasma-shortcut-explorer
-.venv/bin/plasma-shortcut-explorer --diagnose
-KDE_SHORTCUTS_PYTHON=.venv/bin/python scripts/test.sh -q
-```
+| Component | Requirement |
+| --- | --- |
+| Desktop | Plasma 6.0 or newer is the API baseline; see tested versions below |
+| Shortcut service | KDE 6 KGlobalAccel daemon (`kglobalacceld`), running in your desktop session |
+| Session bus | A working user D-Bus session with `org.kde.kglobalaccel` available |
+| Python | 3.11 or newer for source installs and native packages |
+| Python Qt bindings | PySide6 Essentials 6.6 or newer, below 7, providing Qt Widgets and Qt Network; distro packages may split the modules differently |
+| D-Bus bindings | `dbus-next` 0.2.3 or newer, below 0.3 |
+| Wayland runtime | The matching Qt 6 Wayland platform plugin and its system libraries |
+| Shortcut editing | Plasma System Settings with the Shortcuts module (`kcm_keys`); `kcmshell6` can also open it |
 
-PySide6 Essentials (Qt Widgets) and dbus-next are the only direct Python runtime dependencies. Discovery runs in
-a worker; the UI remains responsive. Diagnostics emit JSON and return nonzero
-for partial or complete discovery failures. No session bus means an explanatory
-empty/error state, never fabricated defaults.
+**Minimum API version is not a fully tested minimum desktop version.** The three
+discovery methods are present in the
+[KGlobalAccel 6.0.0 interface](https://github.com/KDE/kglobalaccel/blob/v6.0.0/src/org.kde.KGlobalAccel.xml).
+Live discovery and GUI smoke checks have been performed on **Plasma 6.8,
+KGlobalAccel/Frameworks 6.31, and Qt/PySide6 6.12**, on EndeavourOS with Wayland.
+Older Plasma 6 releases still need live validation. X11 sessions have not been
+validated; Wayland activation and monitor placement also need the manual checks
+described below. A native package build passing in a container does not establish
+that the desktop UI works on that distribution.
 
-The test runner creates a private D-Bus session and uses Qt offscreen. It enforces
-**95% line and 95% branch coverage separately**, including the UI and lifecycle.
-For a coverage report run `.venv/bin/python -m coverage html` and open
-`htmlcov/index.html`. Tests require `dbus-run-session` (Arch: `dbus`; Debian/Fedora:
-`dbus-daemon`). Plain pytest skips the private-bus integration test unless launched
-through the test runner.
+Native packaging currently targets rolling Arch/EndeavourOS, Debian 13, and
+Fedora 44. These are build targets, not a claim of compatibility with every
+Debian/Ubuntu or Fedora release. See [RELEASES.md](RELEASES.md) for package
+validation status. Package managers install the declared runtime dependencies;
+source installations also need the system Qt platform libraries. System Settings
+is optional for browsing, but required for the editing handoff unless
+`kcmshell6` and the Shortcuts module are available.
 
 ## User installation
 
@@ -79,6 +86,22 @@ never executes it. Clicking a row or navigating with arrow keys shows its detail
 the named action there. KDE does not expose individual action selection. Component
 names containing spaces open the full Shortcuts page instead.
 
+### Update checks
+
+After the window opens, the app checks GitHub's public latest-release endpoint
+asynchronously, at most once every 24 hours. Shortcut discovery and navigation
+do not wait for the request. A newer stable version shows a button leading to
+Settings and the release downloads. Settings shows the installed version and
+provides **Check now** and an option to disable automatic checks. Preferences
+and the last release result are stored using Qt's normal user settings.
+
+Checks send no shortcut data or credentials; GitHub receives a normal HTTPS
+request with the app version in its user agent. Requests have a ten-second
+deadline. Failed checks leave shortcut browsing available; use Check now to
+retry. Before the first release, the app reports that none is published yet.
+Checks offer downloads, not in-place installation. Update native packages using
+your package manager; the explorer does not replace package-managed files.
+
 ### Wayland placement
 
 Qt requests centering on the pointer's screen, but KWin decides placement. For
@@ -103,7 +126,12 @@ Use `--diagnose` when reporting problems. See [DESIGN.md](DESIGN.md) for verifie
 
 [RELEASES.md](RELEASES.md) describes native package builds, the candidate AppImage
 builder, release checks, and what remains before public distribution. The GitHub
-workflows are prepared locally; nothing has been published.
+workflows are available in the repository. Pushing a matching `vX.Y.Z` tag
+automatically tests and builds the source archive, wheel, Debian, Fedora, and
+Arch packages, uploads all assets and checksums to a draft, then publishes it
+without an approval step. No downloadable release has been published yet.
+Native package builds and the candidate AppImage are separate
+from publishing apt/dnf update repositories or submitting a recipe to AUR.
 
 ## Uninstall
 
@@ -120,5 +148,31 @@ rm -rf "$base/plasma-shortcut-explorer"
 ```
 
 Remove any window rule you added. The utility stores no shortcut configuration.
+
+## Development
+
+Install Python and the normal Qt Wayland runtime through your package manager
+if absent, then:
+
+```sh
+python3 -m venv .venv
+.venv/bin/pip install -r requirements-dev.txt
+.venv/bin/pip install --no-deps -e .
+.venv/bin/plasma-shortcut-explorer
+.venv/bin/plasma-shortcut-explorer --diagnose
+KDE_SHORTCUTS_PYTHON=.venv/bin/python scripts/test.sh -q
+```
+
+PySide6 Essentials (Qt Widgets and Qt Network) and dbus-next are the only direct Python runtime dependencies. Discovery runs in
+a worker; the UI remains responsive. Diagnostics emit JSON and return nonzero
+for partial or complete discovery failures. No session bus means an explanatory
+empty/error state, never fabricated defaults.
+
+The test runner creates a private D-Bus session and uses Qt offscreen. It enforces
+**95% line and 95% branch coverage separately**, including the UI and lifecycle.
+For a coverage report run `.venv/bin/python -m coverage html` and open
+`htmlcov/index.html`. Tests require `dbus-run-session` (Arch: `dbus`; Debian/Fedora:
+`dbus-daemon`). Plain pytest skips the private-bus integration test unless launched
+through the test runner.
 
 MIT licensed.
