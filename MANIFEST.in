@@ -1,0 +1,4 @@
+include README.md DESIGN.md AGENTS.md LICENSE requirements-dev.txt
+recursive-include data *.desktop *.svg
+recursive-include scripts *.sh
+recursive-include tests *.py

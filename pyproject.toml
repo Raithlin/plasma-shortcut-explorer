@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kde-shortcut-explorer"
+version = "0.1.0"
+description = "Explore the global shortcuts configured in KDE Plasma 6"
+requires-python = ">=3.11"
+dependencies = ["PySide6-Essentials>=6.6,<7", "dbus-next>=0.2.3,<0.3"]
+license = "MIT"
+
+[project.optional-dependencies]
+test = ["pytest>=8"]
+
+[project.scripts]
+kde-shortcuts = "kde_shortcuts.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

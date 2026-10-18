@@ -1,0 +1,22 @@
+# Python environments and generated files
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Test and analysis output
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+
+# Local credentials and tool state
+.env
+.env.*
+!.env.example
+.aws/
+.agents/
+.codex/

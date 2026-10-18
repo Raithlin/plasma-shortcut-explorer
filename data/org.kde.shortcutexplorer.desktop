@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Shortcut Explorer
+Comment=Search your configured KDE global shortcuts
+Exec=kde-shortcuts
+Icon=org.kde.shortcutexplorer
+Terminal=false
+Categories=Utility;Qt;KDE;
+StartupNotify=true
+StartupWMClass=org.kde.shortcutexplorer

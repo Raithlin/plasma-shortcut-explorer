@@ -1,0 +1,56 @@
+"""Read current bindings; never read defaults or mutate KDE configuration."""
+import asyncio
+from dataclasses import dataclass, field
+from dbus_next import Message, MessageType
+from dbus_next.aio import MessageBus
+from .model import Shortcut, category, normalize, deduplicate
+
+SERVICE = "org.kde.kglobalaccel"
+PATH = "/kglobalaccel"
+INTERFACE = "org.kde.KGlobalAccel"
+
+
+@dataclass
+class Discovery:
+    rows: list = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+
+async def discover(bus_factory=MessageBus, cancelled=lambda: False):
+    result = Discovery()
+    bus = None
+    try:
+        bus = await bus_factory().connect()
+
+        async def call(member, signature="", body=None):
+            reply = await asyncio.wait_for(bus.call(Message(destination=SERVICE, path=PATH,
+                interface=INTERFACE, member=member, signature=signature, body=body or [])), 5)
+            if reply.message_type == MessageType.ERROR:
+                raise RuntimeError(f"{member}: {reply.error_name}: {reply.body}")
+            return reply.body[0]
+
+        components = await call("allMainComponents")
+        for component in components:
+            if cancelled():
+                break
+            try:
+                actions = await call("allActionsForComponent", "as", [component])
+                for action in actions:
+                    if cancelled():
+                        break
+                    try:
+                        keys = normalize(await call("shortcutKeys", "as", [action]))
+                        if keys:
+                            result.rows.append(Shortcut(action[0], action[1], action[2] or action[0],
+                                action[3] or action[1], keys, category(action[0], action[1])))
+                    except Exception as exc:
+                        result.errors.append(f"{component[0]}/{action[1]}: {exc}")
+            except Exception as exc:
+                result.errors.append(f"{component[0]}: {exc}")
+    except Exception as exc:
+        result.errors.append(f"KDE shortcut discovery unavailable: {exc}")
+    finally:
+        if bus is not None:
+            bus.disconnect()
+    result.rows = deduplicate(result.rows)
+    return result
