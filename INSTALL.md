@@ -46,7 +46,7 @@ are available; the source installation below is available now.
    ```
 
 Launch **Plasma Shortcut Explorer** from the application menu or run
-`plasma-shortcut-explorer`. Then [assign an opening shortcut](README.md#assign-metak).
+`plasma-shortcut-explorer`. Then [assign a shortcut you will remember](README.md#assign-a-shortcut).
 This package does not register a shortcut or add autostart entries.
 
 Pacman's local package installation and Arch's full-upgrade guidance are

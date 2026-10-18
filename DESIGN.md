@@ -47,7 +47,7 @@ runtime state and sequence semantics. It is deliberately not read or written.
 
 ## Activation and placement
 
-Qt QShortcut is window-local and cannot register Meta+K on Wayland. Use Plasma's
+Qt QShortcut is window-local and cannot register a global launch key on Wayland. Use Plasma's
 System Settings to assign the installed desktop application. Plasma launches it
 on demand, supplies its ordinary activation mechanism, and warns about conflicts.
 No autostart or daemon is necessary. This follows the [KDE status guidance](https://develop.kde.org/hig/status_changes/), which discourages unnecessary persistent tray icons. The application does not call mutating
@@ -95,7 +95,7 @@ environment; use the tested requirements snapshot for exact development versions
 - A sandbox-blocked session bus produced an explicit diagnostic, with no crash or defaults.
 - Installer shell syntax and desktop-entry validation passed; distributable wheel built.
 
-Still manual: user-assigned Meta+K launch, conflict resolution in System Settings,
+Still manual: user-assigned shortcut launch, conflict resolution in System Settings,
 focus-loss behavior during normal desktop use, and multi-monitor KWin rule placement.
 The 0.172-second figure measures discovery, not total Python/Qt cold-start latency.
 

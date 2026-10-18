@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Remove the `kde-shortcuts` command alias; use `plasma-shortcut-explorer`.
+- Guide users to choose a memorable launch shortcut; Meta+K is only a suggestion.
 - Check for newer stable GitHub releases asynchronously, with daily automatic
   checks, a Settings opt-out, manual checks, and release download links.
 - Publish tagged releases automatically after tests, coverage, and native
@@ -11,7 +13,7 @@
 - Follow Qt’s system appearance without custom palettes or a theme selector.
 
 - Name the app Plasma Shortcut Explorer and use Raithlin/plasma-shortcut-explorer
-  for the intended repository. Retain the desktop ID and legacy command alias.
+  for the intended repository. Retain the desktop ID.
 
 - Read current global shortcuts from KDE's KGlobalAccel service.
 - Search categorized actions and key combinations in a Qt overlay.

@@ -45,7 +45,6 @@ KDE_SHORTCUTS_PYTHON=%{__python3} scripts/test.sh -q
 %license LICENSE
 %doc README.md DESIGN.md
 %{_bindir}/plasma-shortcut-explorer
-%{_bindir}/kde-shortcuts
 %{_datadir}/applications/org.kde.shortcutexplorer.desktop
 %{_datadir}/icons/hicolor/scalable/apps/org.kde.shortcutexplorer.svg
 %{_datadir}/metainfo/org.kde.shortcutexplorer.metainfo.xml

@@ -26,17 +26,15 @@ under `${XDG_DATA_HOME:-~/.local/share}/plasma-shortcut-explorer/venv`, installs
 launcher in `~/.local/bin`, and adds a desktop entry and icon. No root needed.
 The desktop entry uses an absolute executable path. Re-run the script to update.
 
-The primary command is `plasma-shortcut-explorer`; `kde-shortcuts` remains a
-compatibility alias. The desktop ID stays `org.kde.shortcutexplorer`, so existing
-Plasma shortcut assignments continue to refer to the same application. If you
-installed the prototype under `~/.local/share/kde-shortcut-explorer`, that old
-environment is not removed automatically by the renamed installer.
+Run `plasma-shortcut-explorer` or open **Plasma Shortcut Explorer** from the
+application menu.
 
-## Assign Meta+K
+## Assign a shortcut
 
 1. Open **System Settings → Keyboard → Shortcuts**.
 2. Use **Add New → Application** (wording may vary), select **Plasma Shortcut Explorer**.
-3. Add **Meta+K** as its launch shortcut and apply.
+3. Choose a launch shortcut you will remember and apply it. **Meta+K** is one
+   suggestion if it is available on your system.
 4. If Plasma reports a conflict, choose another combination or explicitly reassign
    it yourself. The app never overrides an existing binding.
 
@@ -88,7 +86,7 @@ Qt requests centering on the pointer's screen, but KWin decides placement. For
 consistent placement use **System Settings → Window Management → Window Rules**:
 add a rule matching the Plasma Shortcut Explorer window (use Detect Window Properties),
 set **Initial placement → Force → Centered**, and, if offered, **Screen → Apply
-Initially → Active screen**. Test Meta+K from each monitor. Exact option labels
+Initially → Active screen**. Test your launch shortcut from each monitor. Exact option labels
 vary. Active-screen placement and focus activation need a real-session check;
 application-side absolute positioning cannot guarantee them on Wayland.
 
@@ -115,12 +113,11 @@ from publishing apt/dnf update repositories or submitting a recipe to AUR.
 
 ## Uninstall
 
-Remove the Meta+K entry you created in System Settings first. Then:
+Remove the launch shortcut you created in System Settings first. Then:
 
 ```sh
 base="${XDG_DATA_HOME:-$HOME/.local/share}"
 rm -f "$HOME/.local/bin/plasma-shortcut-explorer"
-rm -f "$HOME/.local/bin/kde-shortcuts"
 rm -f "$base/applications/org.kde.shortcutexplorer.desktop"
 rm -f "$base/icons/hicolor/scalable/apps/org.kde.shortcutexplorer.svg"
 rm -f "$base/metainfo/org.kde.shortcutexplorer.metainfo.xml"

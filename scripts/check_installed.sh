@@ -2,7 +2,7 @@
 # Called inside a package-test container, with no KDE session service running.
 set -eu
 test -x /usr/bin/plasma-shortcut-explorer
-test -x /usr/bin/kde-shortcuts
+test ! -e /usr/bin/kde-shortcuts
 test -f /usr/share/applications/org.kde.shortcutexplorer.desktop
 test -f /usr/share/icons/hicolor/scalable/apps/org.kde.shortcutexplorer.svg
 test -f /usr/share/metainfo/org.kde.shortcutexplorer.metainfo.xml

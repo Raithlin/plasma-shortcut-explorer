@@ -20,7 +20,6 @@ Issues = "https://github.com/Raithlin/plasma-shortcut-explorer/issues"
 test = ["pytest>=8", "coverage>=7.6,<8"]
 
 [project.scripts]
-kde-shortcuts = "kde_shortcuts.app:main"
 plasma-shortcut-explorer = "kde_shortcuts.app:main"
 
 [tool.setuptools.packages.find]

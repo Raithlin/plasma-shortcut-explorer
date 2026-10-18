@@ -75,8 +75,8 @@ python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.0.tar.gz \
 
 For direct installation use `sudo pacman -U FILE.pkg.tar.zst`,
 `sudo apt install ./FILE.deb`, or `sudo dnf install ./FILE.rpm`.
-Use the same manager to remove `plasma-shortcut-explorer`. Packages never configure
-Meta+K, install autostart entries, or alter KDE shortcut files.
+Use the same manager to remove `plasma-shortcut-explorer`. Packages never assign
+launch shortcuts, install autostart entries, or alter KDE shortcut files.
 
 ## AppImage
 
