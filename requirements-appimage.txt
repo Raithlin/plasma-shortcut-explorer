@@ -1,0 +1,2 @@
+# Build-only dependency; Qt/runtime versions come from requirements-dev.txt.
+PyInstaller==6.22.3

@@ -1,0 +1,15 @@
+#!/usr/bin/make -f
+export PYBUILD_NAME=plasma-shortcut-explorer
+export PYBUILD_SYSTEM=pyproject
+
+%:
+	dh $@ --buildsystem=pybuild
+
+override_dh_auto_test:
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
+	KDE_SHORTCUTS_PYTHON=python3 scripts/test.sh -q
+endif
+
+override_dh_python3:
+	# Explicit distro dependencies above replace PyPI's split Essentials metadata.
+	dh_python3 --no-guessing-deps

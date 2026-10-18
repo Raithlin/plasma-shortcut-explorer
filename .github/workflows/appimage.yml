@@ -1,0 +1,71 @@
+name: Build candidate AppImage
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing version tag
+        type: string
+        required: true
+      tool_url:
+        description: Versioned x86_64 appimagetool release URL
+        type: string
+        required: true
+      tool_sha256:
+        description: Independently verified appimagetool SHA-256
+        type: string
+        required: true
+      runtime_url:
+        description: Versioned x86_64 type2-runtime release URL
+        type: string
+        required: true
+      runtime_sha256:
+        description: Independently verified runtime SHA-256
+        type: string
+        required: true
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.tag }}
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.12'
+          cache: pip
+      - run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0 libxkbcommon0 dbus-daemon
+      - run: python -m pip install -r requirements-dev.txt -r requirements-appimage.txt && python -m pip install --no-deps .
+      - run: scripts/test.sh -q
+      - run: python scripts/validate_release.py --tag "$RELEASE_TAG"
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+      - run: python scripts/configure_release.py --project-url "https://github.com/$GITHUB_REPOSITORY"
+      - name: Fetch explicitly verified tools
+        env:
+          TOOL_URL: ${{ inputs.tool_url }}
+          TOOL_SHA: ${{ inputs.tool_sha256 }}
+          RUNTIME_URL: ${{ inputs.runtime_url }}
+          RUNTIME_SHA: ${{ inputs.runtime_sha256 }}
+        run: |
+          mkdir -p build/tools
+          python scripts/fetch_verified.py "$TOOL_URL" "$TOOL_SHA" build/tools/appimagetool
+          python scripts/fetch_verified.py "$RUNTIME_URL" "$RUNTIME_SHA" build/tools/runtime-x86_64
+      - run: scripts/build_appimage.sh
+        env:
+          APPIMAGETOOL: ${{ github.workspace }}/build/tools/appimagetool
+          APPIMAGE_RUNTIME: ${{ github.workspace }}/build/tools/runtime-x86_64
+      - name: Check diagnostics without a KDE session
+        run: |
+          set +e
+          dist/*.AppImage --appimage-extract-and-run --diagnose > build/diagnostics.json
+          status=$?
+          set -e
+          test "$status" -eq 1
+          python -c 'import json; r=json.load(open("build/diagnostics.json")); assert r["errors"] and not r["rows"]'
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: candidate-appimage
+          path: dist/*.AppImage

@@ -1,0 +1,30 @@
+pkgname=plasma-shortcut-explorer
+pkgver=@VERSION@
+pkgrel=1
+pkgdesc='Search the global shortcuts configured in KDE Plasma 6'
+arch=('any')
+url=@URL@
+license=('MIT')
+depends=('python>=3.11' 'pyside6>=6.6' 'python-dbus-next' 'qt6-wayland' 'kglobalacceld>=6')
+optdepends=('systemsettings: configure the launch shortcut from app settings')
+makedepends=('python-build' 'python-installer' 'python-setuptools' 'python-wheel')
+checkdepends=('python-pytest' 'python-coverage' 'dbus')
+source=(@SOURCE@)
+sha256sums=('@SHA256@')
+
+build() {
+    cd "$srcdir/plasma_shortcut_explorer-$pkgver"
+    python -m build --wheel --no-isolation
+}
+
+check() {
+    cd "$srcdir/plasma_shortcut_explorer-$pkgver"
+    scripts/test.sh -q
+}
+
+package() {
+    cd "$srcdir/plasma_shortcut_explorer-$pkgver"
+    python -m installer --destdir="$pkgdir" dist/*.whl
+    install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+    install -Dm644 README.md "$pkgdir/usr/share/doc/$pkgname/README.md"
+}
