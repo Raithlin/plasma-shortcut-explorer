@@ -36,6 +36,10 @@ Open **Plasma Shortcut Explorer** from the application menu or run
 The shortcut opens the overlay with search focused. Type to filter, use the
 arrow keys to select an action, and press Escape or switch focus to close it.
 The app starts on demand and ignores repeated launches while it is open.
+You can also find it in the application launcher by searching for “keybind” or
+“hotkeys”. Drag the bottom-right resize handle to give the results more space.
+The count beneath the list shows the configured total, or how many shortcuts
+match your search.
 
 ## Settings
 
@@ -43,7 +47,7 @@ Open **Settings**, press `Ctrl+,`, or run `plasma-shortcut-explorer --settings`.
 The page shows the app's launch shortcut and opens Plasma's editor to change it.
 Refresh or reopen the explorer after changing a binding.
 
-Select a row to see its details. **Edit in Plasma…** opens that application's
+Select a row to see where to find it in Plasma. **Edit in Plasma…** opens that application's
 shortcut settings. Find the named action there; selecting a row never runs it.
 
 ![Settings with launch-shortcut configuration and update controls](docs/screenshots/settings.png)
