@@ -2,7 +2,8 @@ import asyncio
 from PySide6.QtCore import Qt, QThread, Signal, QEvent, QSize
 from PySide6.QtGui import QGuiApplication, QCursor, QKeySequence, QShortcut, QPalette
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
-    QTreeWidget, QTreeWidgetItem, QPushButton, QStackedWidget, QFrame)
+    QTreeWidget, QTreeWidgetItem, QPushButton, QStackedWidget, QFrame,
+    QHeaderView, QSizeGrip)
 from .config import WIDTH, HEIGHT
 from .settings_ui import SettingsPage
 from .integration import open_shortcut_settings
@@ -53,17 +54,20 @@ class Overlay(QWidget):
         self.tree.setHeaderHidden(True)
         self.tree.setFrameShape(QFrame.Shape.NoFrame)
         self.tree.setColumnCount(2)
-        self.tree.setColumnWidth(0, 420)
+        self.tree.header().setStretchLastSection(False)
+        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
+        self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.tree.viewport().installEventFilter(self)
         self.tree.setRootIsDecorated(False)
         self.tree.setIndentation(12)
-        content.addWidget(self.tree)
+        content.addWidget(self.tree, 1)
         self.details = QFrame()
         self.details.setFrameShape(QFrame.Shape.StyledPanel)
-        details_layout = QVBoxLayout(self.details)
+        details_layout = QHBoxLayout(self.details)
         self.detail_text = QLabel()
         self.detail_text.setTextFormat(Qt.TextFormat.PlainText)
         self.detail_text.setWordWrap(True)
-        details_layout.addWidget(self.detail_text)
+        details_layout.addWidget(self.detail_text, 1)
         self.edit_button = QPushButton("Edit in Plasma…")
         self.edit_button.clicked.connect(self.edit_selected)
         details_layout.addWidget(self.edit_button)
@@ -87,6 +91,9 @@ class Overlay(QWidget):
         self.update_banner.clicked.connect(self.show_settings)
         self.settings_page.update_checker.checked.connect(self.show_update)
         layout.addWidget(self.update_banner)
+        self.size_grip = QSizeGrip(self)
+        self.size_grip.setToolTip("Drag to resize")
+        layout.addWidget(self.size_grip, alignment=Qt.AlignmentFlag.AlignRight)
         QShortcut(QKeySequence("Ctrl+,"), self, activated=self.show_settings)
         QShortcut(QKeySequence("Ctrl+F"), self, activated=self.input.setFocus)
         self.input.textChanged.connect(self.render)
@@ -107,9 +114,7 @@ class Overlay(QWidget):
         self.details.setVisible(row is not None)
         if row is not None:
             self.detail_text.setText(
-                f"{row.action}\n{row.application} · {row.category}\n"
-                f"{'  or  '.join(row.keys)}\n"
-                f"In Plasma’s Shortcuts page, find {row.application}, then {row.action}.")
+                f"In Plasma’s Shortcuts page: {row.application} → {row.action}.")
             self.detail_text.setToolTip(f"{row.component} / {row.action_id}")
 
     def edit_selected(self):
@@ -167,11 +172,13 @@ class Overlay(QWidget):
             item.setData(0, Qt.ItemDataRole.UserRole, row)
             item.setSizeHint(0, QSize(0, 42))
             item.setToolTip(0, f"{row.component} / {row.action_id}")
+            item.setToolTip(1, "  or  ".join(row.keys))
             caps = QWidget()
             box = QHBoxLayout(caps)
             box.setContentsMargins(2, 2, 2, 2)
             for key in row.keys:
                 label = QLabel(key)
+                label.setToolTip(key)
                 label.setFrameShape(QFrame.Shape.StyledPanel)
                 label.setMargin(4)
                 label.setAutoFillBackground(True)
@@ -180,13 +187,28 @@ class Overlay(QWidget):
             box.addStretch()
             self.tree.setItemWidget(item, 1, caps)
             first = first or item
+        self.resize_columns()
         if first:
             self.tree.setCurrentItem(first)
         errors = getattr(self, "errors", [])
-        self.status.setText(f"{len(matches)} configured actions" + (f" · Partial discovery: {errors[0]}" if errors else "" if matches else " · No matching assigned shortcuts"))
+        count = f"{len(self.rows)} shortcut{'s' if len(self.rows) != 1 else ''} configured"
+        if self.input.text().strip():
+            count = f"{len(matches)} of {len(self.rows)} shortcuts shown"
+        if not matches:
+            count += " · No matching assigned shortcuts"
+        if errors:
+            count += f" · Partial discovery: {errors[0]}"
+        self.status.setText(count)
         self.status.setToolTip("\n".join(errors))
 
+    def resize_columns(self):
+        # Reserve room for action names even when an action has many assigned keys.
+        self.tree.setColumnWidth(1, min(self.tree.sizeHintForColumn(1),
+                                       int(self.tree.viewport().width() * 0.45)))
+
     def eventFilter(self, obj, event):
+        if obj is self.tree.viewport() and event.type() == QEvent.Type.Resize:
+            self.resize_columns()
         if obj is self.input and event.type() == QEvent.Type.KeyPress and event.key() in (Qt.Key.Key_Down, Qt.Key.Key_Up):
             self.tree.setFocus()
             QGuiApplication.sendEvent(self.tree, event)
@@ -197,7 +219,7 @@ class Overlay(QWidget):
         super().showEvent(event)
         screen = QGuiApplication.screenAt(QCursor.pos()) or QGuiApplication.primaryScreen()
         geometry = screen.availableGeometry()
-        self.resize(min(WIDTH, geometry.width()), min(HEIGHT, geometry.height()))
+        self.resize(min(self.width(), geometry.width()), min(self.height(), geometry.height()))
         self.move(geometry.center() - self.rect().center())
         if self.pages.currentIndex() == 0:
             self.input.setFocus()

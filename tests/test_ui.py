@@ -70,11 +70,24 @@ def test_render_search_and_keycaps(overlay):
     overlay.input.setText("META B")
     assert overlay.tree.topLevelItemCount() == 1
     assert "Beta" in overlay.tree.currentItem().text(0)
+    assert overlay.status.text() == "1 of 3 shortcuts shown"
     overlay.input.setText("no such shortcut")
     assert overlay.tree.topLevelItemCount() == 0
     assert "No matching" in overlay.status.text()
     overlay.input.clear()
-    assert "3 configured" in overlay.status.text()
+    assert overlay.status.text() == "3 shortcuts configured"
+    overlay.input.setText("   ")
+    assert overlay.status.text() == "3 shortcuts configured"
+
+
+def test_single_configured_shortcut_and_partial_filtered_count(overlay):
+    overlay.loader.deliver(Discovery(rows()[:1]))
+    assert overlay.status.text() == "1 shortcut configured"
+    overlay.input.setText("missing")
+    overlay.loader.deliver(Discovery(rows(), errors=["Component unavailable"]))
+    assert overlay.status.text() == (
+        "0 of 3 shortcuts shown · No matching assigned shortcuts"
+        " · Partial discovery: Component unavailable")
 
 
 def test_refresh_rereads_and_reports_errors(overlay):
@@ -167,8 +180,7 @@ def test_selection_shows_details_without_opening_editor(overlay, monkeypatch, qa
     overlay.show()
     overlay.activateWindow()
     qapp.processEvents()
-    assert "Alpha" in overlay.detail_text.text()
-    assert "Meta+A  or  Alt+A" in overlay.detail_text.text()
+    assert overlay.detail_text.text() == "In Plasma’s Shortcuts page: KWin → Alpha."
     QTest.keyClick(overlay.input, Qt.Key.Key_Down)
     assert overlay.selected_shortcut.action == "Beta"
     assert "Beta" in overlay.detail_text.text()
@@ -184,6 +196,47 @@ def test_selection_shows_details_without_opening_editor(overlay, monkeypatch, qa
     assert overlay.details.isHidden()
     overlay.edit_selected()
     assert calls == ["kwin"]
+
+
+def test_resizing_gives_results_more_space_and_preserves_size(overlay, qapp):
+    overlay.loader.deliver(Discovery(rows()))
+    overlay.show()
+    qapp.processEvents()
+    assert overlay.size_grip.isVisible()
+    assert overlay.details.height() < 90
+    original_tree_height = overlay.tree.height()
+    original_action_width = overlay.tree.columnWidth(0)
+    original_keys_width = overlay.tree.columnWidth(1)
+    overlay.resize(overlay.width() - 100, overlay.height() - 80)
+    qapp.processEvents()
+    assert overlay.tree.height() < original_tree_height
+    assert overlay.tree.columnWidth(0) < original_action_width
+    assert overlay.tree.columnWidth(1) == original_keys_width
+    resized = overlay.size()
+    overlay.hide()
+    overlay.show()
+    qapp.processEvents()
+    assert overlay.size() == resized
+    overlay.show_settings()
+    qapp.processEvents()
+    assert overlay.size_grip.isVisible()
+
+
+def test_many_bindings_leave_room_for_action_names(overlay, qapp):
+    keys = ("Meta+Ctrl+Shift+Alt+Left", "Meta+Ctrl+Shift+Alt+Right", "Ctrl+F10")
+    overlay.loader.deliver(Discovery([
+        Shortcut("kwin", "long", "KWin", "Action with several bindings", keys, "Windows")]))
+    overlay.show()
+    qapp.processEvents()
+    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(1)
+    item = overlay.tree.currentItem()
+    assert item.toolTip(1) == "  or  ".join(keys)
+    assert [label.toolTip() for label in overlay.tree.itemWidget(item, 1).findChildren(QLabel)] == list(keys)
+    original_keys_width = overlay.tree.columnWidth(1)
+    overlay.resize(680, 520)
+    qapp.processEvents()
+    assert overlay.tree.columnWidth(1) < original_keys_width
+    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(1)
 
 
 def test_edit_failure_is_visible_and_category_has_no_action(overlay, monkeypatch):

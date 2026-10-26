@@ -6,6 +6,7 @@ Exec=plasma-shortcut-explorer
 Icon=org.kde.shortcutexplorer
 Terminal=false
 Categories=Utility;Qt;KDE;
+Keywords=shortcuts;keybind;keybindings;hotkeys;keyboard;
 StartupNotify=true
 StartupWMClass=org.kde.shortcutexplorer
 

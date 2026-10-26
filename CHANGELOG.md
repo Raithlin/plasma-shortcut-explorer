@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add keybind, keybindings, and hotkeys to application launcher search keywords.
+- Add a window resize handle and adapt the results columns to the available space.
+- Compact the selected-action hint and show configured totals when filtering shortcuts.
+
 ## 0.1.1 (2026-10-18)
 
 - Bound shortcut discovery to 20 seconds and retain results collected before the deadline.
