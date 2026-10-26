@@ -16,7 +16,7 @@ sha256sum --check --ignore-missing SHA256SUMS
 The package filename should appear with `OK`. You do not need to download the
 other release assets.
 
-The package commands below use version 0.1.1. Substitute the exact
+The package commands below use version 0.1.2. Substitute the exact
 filename you downloaded.
 
 ## Arch Linux
@@ -31,7 +31,7 @@ sudo pacman -Syu
 Pacman upgrades installed system packages. Then install the download:
 
 ```sh
-sudo pacman -U ./plasma-shortcut-explorer-0.1.1-1-any.pkg.tar.zst
+sudo pacman -U ./plasma-shortcut-explorer-0.1.2-1-any.pkg.tar.zst
 ```
 
 Pacman installs the app and resolves its dependencies. If Plasma's shortcut
@@ -51,7 +51,7 @@ currently target x86-64 Plasma 6 systems. See the ArchWiki for
 Download the `.deb` package and install it:
 
 ```sh
-sudo apt install ./plasma-shortcut-explorer_0.1.1-1_all.deb
+sudo apt install ./plasma-shortcut-explorer_0.1.2-1_all.deb
 ```
 
 Apt installs the app and resolves its dependencies from your configured repositories.
@@ -61,7 +61,7 @@ Apt installs the app and resolves its dependencies from your configured reposito
 Download the `.rpm` package and install it:
 
 ```sh
-sudo dnf install ./plasma-shortcut-explorer-0.1.1-1.fc44.noarch.rpm
+sudo dnf install ./plasma-shortcut-explorer-0.1.2-1.fc44.noarch.rpm
 ```
 
 Dnf installs the app and resolves its dependencies from your configured repositories.

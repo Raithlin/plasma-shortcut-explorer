@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.2 (2026-10-26)
+
 - Add keybind, keybindings, and hotkeys to application launcher search keywords.
 - Add a window resize handle and adapt the results columns to the available space.
 - Compact the selected-action hint and show configured totals when filtering shortcuts.

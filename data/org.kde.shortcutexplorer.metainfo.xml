@@ -20,6 +20,12 @@
     <name>Plasma Shortcut Explorer contributors</name>
   </developer>
   <releases>
+    <release version="0.1.2" type="stable" date="2026-10-26">
+      <description>
+        <p>Add launcher search keywords, a resizable overlay with adaptive columns,
+        compact selection details, and clearer shortcut counts.</p>
+      </description>
+    </release>
     <release version="0.1.1" type="stable" date="2026-10-18">
       <description>
         <p>Bound shortcut discovery and improve test isolation and uninstall safety.</p>

@@ -1,8 +1,8 @@
 # Release engineering
 
-Version 0.1.1 follows the initial release. GitHub Releases hosts the source
-archive, wheel, and native packages. AUR publishing and AppImage qualification
-remain pending.
+Version 0.1.2 improves launcher search and the shortcut window layout. GitHub
+Releases hosts the source archive, wheel, and native packages. AUR publishing
+and AppImage qualification remain pending.
 
 ## Prepare a version
 
@@ -13,10 +13,10 @@ Keep the version consistent in:
 - `packaging/debian/changelog`
 - `data/org.kde.shortcutexplorer.metainfo.xml`
 
-Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.1:
+Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.2:
 
 ```sh
-python scripts/validate_release.py --tag v0.1.1
+python scripts/validate_release.py --tag v0.1.2
 ```
 
 The script reports consistent metadata or exits with an error. It also checks
@@ -109,9 +109,9 @@ The account and automation key setup are still pending for this project.
 Generate the recipe from the published source asset:
 
 ```sh
-python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.1.tar.gz \
+python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.2.tar.gz \
   --project-url https://github.com/Raithlin/plasma-shortcut-explorer \
-  --source-url https://github.com/Raithlin/plasma-shortcut-explorer/releases/download/v0.1.1/plasma_shortcut_explorer-0.1.1.tar.gz
+  --source-url https://github.com/Raithlin/plasma-shortcut-explorer/releases/download/v0.1.2/plasma_shortcut_explorer-0.1.2.tar.gz
 ```
 
 The helper writes `dist/arch/PKGBUILD` with the source URL and actual SHA-256,
@@ -157,7 +157,14 @@ outside automatic release publication.
 
 ## Validation record
 
-The local suite passed 90 tests with 99.63% line and 98.33% branch coverage.
+For v0.1.2, the local suite passed 93 tests with 99.64% line and 98.44% branch coverage.
+Release metadata, AppStream, and desktop-entry validation passed, and source
+archive and wheel builds succeeded. The UI smoke check passed in a live Plasma
+Wayland session, covering rendering, search, errors, and shutdown. Interactive
+resize-handle dragging, keyboard launch, themes, and multi-monitor placement
+remain manual checks.
+
+For v0.1.1, the local suite passed 90 tests with 99.63% line and 98.33% branch coverage.
 The uncovered paths are the `__main__` wrapper and a defensive oversized-response
 check. Private-bus integration, offscreen UI smoke checks, wheel builds, desktop
 metadata validation, and actionlint passed.

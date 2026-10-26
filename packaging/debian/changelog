@@ -1,3 +1,11 @@
+plasma-shortcut-explorer (0.1.2-1) unstable; urgency=medium
+
+  * Add launcher keywords for keybind, keybindings, and hotkeys.
+  * Make the overlay resizable with adaptive columns and compact selection details.
+  * Show configured shortcut totals and filtered result counts.
+
+ -- Stephen Metcalfe <raithlin@outlook.com>  Mon, 26 Oct 2026 16:55:34 +0200
+
 plasma-shortcut-explorer (0.1.1-1) unstable; urgency=medium
 
   * Bound shortcut discovery and preserve partial results on timeout.
