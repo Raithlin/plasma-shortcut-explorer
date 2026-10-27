@@ -94,7 +94,7 @@ launcher and desktop entry do not shadow the package's versions.
 ## Open the app
 
 Choose **Plasma Shortcut Explorer** from the application menu or run
-`plasma-shortcut-explorer`. The overlay opens with search focused.
+`plasma-shortcut-explorer`. The window opens with search focused.
 [Assign a shortcut you will remember](README.md#assign-a-shortcut) to open it
 from the keyboard.
 

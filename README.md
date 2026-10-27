@@ -33,11 +33,15 @@ Open **Plasma Shortcut Explorer** from the application menu or run
 4. Apply the change. If Plasma reports a conflict, choose another combination
    or reassign the existing binding yourself.
 
-The shortcut opens the overlay with search focused. Type to filter, use the
-arrow keys to select an action, and press Escape or switch focus to close it.
+The shortcut opens the window with search focused. Type to filter and use the
+arrow keys to select an action. Press `/` or **Ctrl+F** to return to search from
+another control; typing `/` inside the search field still enters a slash.
+Press **Escape** or use the titlebar close button to close the app. Switching
+focus leaves the window open.
 The app starts on demand and ignores repeated launches while it is open.
 You can also find it in the application launcher by searching for “keybind” or
-“hotkeys”. Drag the bottom-right resize handle to give the results more space.
+“hotkeys”. Resize using the window borders to give the results more space.
+Use **Refresh** or **Ctrl+R** to read the current bindings again.
 The count beneath the list shows the configured total, or how many shortcuts
 match your search.
 
@@ -64,7 +68,7 @@ but no shortcut data or credentials.
 
 ### Window placement
 
-KWin controls window placement on Wayland. To center the overlay consistently,
+KWin controls window placement on Wayland. To center the window consistently,
 [add a window rule](INSTALL.md#window-placement).
 
 ## Shortcut coverage
