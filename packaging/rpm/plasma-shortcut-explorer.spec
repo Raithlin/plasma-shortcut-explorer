@@ -1,7 +1,7 @@
 # Distro PySide6 supplies the import but does not always use PyPI's split name.
 %global __requires_exclude ^.*pyside6-essentials.*$
 Name:           plasma-shortcut-explorer
-Version:        0.1.3
+Version:        0.1.4
 Release:        1%{?dist}
 Summary:        Search the global shortcuts configured in KDE Plasma 6
 License:        MIT
@@ -50,6 +50,9 @@ KDE_SHORTCUTS_PYTHON=%{__python3} scripts/test.sh -q
 %{_datadir}/metainfo/org.kde.shortcutexplorer.metainfo.xml
 
 %changelog
+* Tue Oct 27 2026 Stephen Metcalfe <raithlin@outlook.com> - 0.1.4-1
+- Keep settings within the window width with larger or wider fonts
+
 * Tue Oct 27 2026 Stephen Metcalfe <raithlin@outlook.com> - 0.1.3-1
 - Adopt native KDE window controls, layout, and search navigation
 

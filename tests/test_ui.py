@@ -269,12 +269,14 @@ def test_search_shortcuts_preserve_typing_and_return_from_settings(overlay, qapp
     assert overlay.loader.starts == 2
 
 
-def test_settings_scroll_at_large_system_font(overlay, qapp):
+@pytest.mark.parametrize("spacing", [0, 4])
+def test_settings_scroll_at_large_system_font(overlay, qapp, spacing):
     from PySide6.QtGui import QFont
     original = QFont(qapp.font())
     try:
         font = QFont(original)
         font.setPointSize(14)
+        font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, spacing)
         qapp.setFont(font)
         overlay.show_settings()
         overlay.resize(540, 400)

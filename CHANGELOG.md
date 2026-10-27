@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 0.1.3 (2026-10-27)
+## 0.1.4 (2026-10-27)
 
 - Use a standard decorated KDE window that stays open when focus moves elsewhere;
   Escape and the titlebar close button still close the app.
@@ -12,6 +12,9 @@
 - Focus search with `/` or Ctrl+F without interfering with slash characters typed
   into the search field. Add Ctrl+R to refresh the current shortcut bindings.
 - Update both screenshots to show the native KWin titlebar and window controls.
+- Keep settings within the window width with larger or wider fonts.
+
+The v0.1.3 tag failed Arch package validation and was not published as a release.
 
 ## 0.1.2 (2026-10-26)
 

@@ -1,6 +1,6 @@
 # Release engineering
 
-Version 0.1.3 adopts a native KDE window layout and adds search navigation. GitHub
+Version 0.1.4 adopts a native KDE window layout and adds search navigation. GitHub
 Releases hosts the source archive, wheel, and native packages. AUR publishing
 and AppImage qualification remain pending.
 
@@ -13,10 +13,10 @@ Keep the version consistent in:
 - `packaging/debian/changelog`
 - `data/org.kde.shortcutexplorer.metainfo.xml`
 
-Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.3:
+Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.4:
 
 ```sh
-python scripts/validate_release.py --tag v0.1.3
+python scripts/validate_release.py --tag v0.1.4
 ```
 
 The script reports consistent metadata or exits with an error. It also checks
@@ -109,9 +109,9 @@ The account and automation key setup are still pending for this project.
 Generate the recipe from the published source asset:
 
 ```sh
-python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.3.tar.gz \
+python scripts/prepare_arch.py dist/plasma_shortcut_explorer-0.1.4.tar.gz \
   --project-url https://github.com/Raithlin/plasma-shortcut-explorer \
-  --source-url https://github.com/Raithlin/plasma-shortcut-explorer/releases/download/v0.1.3/plasma_shortcut_explorer-0.1.3.tar.gz
+  --source-url https://github.com/Raithlin/plasma-shortcut-explorer/releases/download/v0.1.4/plasma_shortcut_explorer-0.1.4.tar.gz
 ```
 
 The helper writes `dist/arch/PKGBUILD` with the source URL and actual SHA-256,
@@ -157,12 +157,15 @@ outside automatic release publication.
 
 ## Validation record
 
-For v0.1.3, the local suite passed 95 tests with 99.65% line and 98.39% branch
+For v0.1.4, the local suite passed 96 tests with 99.65% line and 98.39% branch
 coverage. The live Plasma Wayland run used Breeze and discovered 123 bindings
 without errors. Spectacle captures verify native KWin decorations on both views.
 Interactive edge resizing, task switching, and multi-monitor placement remain
 manual checks. The tagged workflow validates the final source artifacts and
-native packages before publishing.
+native packages before publishing. The v0.1.3 tag was retained after its Arch
+package check caught horizontal settings overflow with wide font metrics; it
+never produced a public release. Version 0.1.4 shortens the automatic-update
+checkbox label, wraps the version label, and tests wider fonts.
 
 For v0.1.2, the local suite passed 93 tests with 99.64% line and 98.44% branch coverage.
 Release metadata, AppStream, and desktop-entry validation passed, and source
