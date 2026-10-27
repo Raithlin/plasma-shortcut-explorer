@@ -1,3 +1,11 @@
+plasma-shortcut-explorer (0.1.3-1) unstable; urgency=medium
+
+  * Adopt a decorated KDE window, native shortcut columns, and scrollable settings.
+  * Add slash search focus and Ctrl+R refresh; keep the window open on focus loss.
+  * Update screenshots to include the native KWin titlebar and controls.
+
+ -- Stephen Metcalfe <raithlin@outlook.com>  Tue, 27 Oct 2026 20:35:00 +0200
+
 plasma-shortcut-explorer (0.1.2-1) unstable; urgency=medium
 
   * Add launcher keywords for keybind, keybindings, and hotkeys.

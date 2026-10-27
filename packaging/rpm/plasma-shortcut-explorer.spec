@@ -1,7 +1,7 @@
 # Distro PySide6 supplies the import but does not always use PyPI's split name.
 %global __requires_exclude ^.*pyside6-essentials.*$
 Name:           plasma-shortcut-explorer
-Version:        0.1.2
+Version:        0.1.3
 Release:        1%{?dist}
 Summary:        Search the global shortcuts configured in KDE Plasma 6
 License:        MIT
@@ -25,7 +25,7 @@ Requires:       kglobalacceld >= 6.0
 Recommends:     systemsettings
 
 %description
-A lightweight overlay showing current KGlobalAccel bindings grouped by category,
+A shortcut explorer showing current KGlobalAccel bindings grouped by category,
 with fuzzy search and keyboard navigation. Requires a KDE Plasma 6 session.
 
 %prep
@@ -50,6 +50,9 @@ KDE_SHORTCUTS_PYTHON=%{__python3} scripts/test.sh -q
 %{_datadir}/metainfo/org.kde.shortcutexplorer.metainfo.xml
 
 %changelog
+* Tue Oct 27 2026 Stephen Metcalfe <raithlin@outlook.com> - 0.1.3-1
+- Adopt native KDE window controls, layout, and search navigation
+
 * Sun Oct 18 2026 Stephen Metcalfe <raithlin@outlook.com> - 0.1.1-1
 - Bound discovery and harden test bus isolation and uninstall cleanup
 

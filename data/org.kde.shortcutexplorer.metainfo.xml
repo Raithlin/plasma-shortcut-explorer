@@ -7,7 +7,7 @@
   <summary>Search your configured KDE global shortcuts</summary>
   <description>
     <p>Explore the keyboard shortcuts registered with KDE Plasma. Search actions,
-    applications, categories, and key combinations using a compact keyboard-first overlay.</p>
+    applications, categories, and key combinations using a native keyboard-first window.</p>
     <p>Plasma Shortcut Explorer reads your current configuration without changing bindings.
     It requires a running KDE Plasma 6 session and its KGlobalAccel service.</p>
   </description>
@@ -20,6 +20,13 @@
     <name>Plasma Shortcut Explorer contributors</name>
   </developer>
   <releases>
+    <release version="0.1.3" type="stable" date="2026-10-27">
+      <description>
+        <p>Adopt native KDE window controls, shortcut columns, and scrollable settings.
+        Focus search with the slash key or Ctrl+F and refresh with Ctrl+R.
+        Keep the window open when focus moves to another application.</p>
+      </description>
+    </release>
     <release version="0.1.2" type="stable" date="2026-10-26">
       <description>
         <p>Add launcher search keywords, a resizable overlay with adaptive columns,

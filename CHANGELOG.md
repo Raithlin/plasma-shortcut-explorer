@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.1.3 (2026-10-27)
+
+- Use a standard decorated KDE window that stays open when focus moves elsewhere;
+  Escape and the titlebar close button still close the app.
+- Replace the oversized heading and boxed keycaps with a compact toolbar, native
+  Action/Application/Shortcut columns, themed icons, and system font sizing.
+- Group settings in a scrollable page that adapts to larger fonts and smaller windows.
+- Focus search with `/` or Ctrl+F without interfering with slash characters typed
+  into the search field. Add Ctrl+R to refresh the current shortcut bindings.
+- Update both screenshots to show the native KWin titlebar and window controls.
+
 ## 0.1.2 (2026-10-26)
 
 - Add keybind, keybindings, and hotkeys to application launcher search keywords.
