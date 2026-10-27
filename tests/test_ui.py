@@ -4,7 +4,7 @@ import pytest
 from PySide6.QtCore import QObject, Signal, QEvent, Qt
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
-from PySide6.QtWidgets import QLabel
+from PySide6.QtWidgets import QSizeGrip
 
 from kde_shortcuts import ui
 from kde_shortcuts.discovery import Discovery
@@ -56,7 +56,7 @@ def overlay(qapp, monkeypatch):
     qapp.processEvents()
 
 
-def test_render_search_and_keycaps(overlay):
+def test_render_search_and_native_columns(overlay):
     assert not overlay.refresh.isEnabled()
     overlay.loader.deliver(Discovery(rows()))
     assert overlay.refresh.isEnabled()
@@ -64,8 +64,7 @@ def test_render_search_and_keycaps(overlay):
     group = overlay.tree.topLevelItem(1)
     assert group.text(0) == "Windows" and group.childCount() == 2
     item = group.child(0)
-    caps = overlay.tree.itemWidget(item, 1).findChildren(QLabel)
-    assert [cap.text() for cap in caps] == ["Meta+A", "Alt+A"]
+    assert [item.text(i) for i in range(3)] == ["Alpha", "KWin", "Meta+A  or  Alt+A"]
     assert "kwin / a" == item.toolTip(0)
     overlay.input.setText("META B")
     assert overlay.tree.topLevelItemCount() == 1
@@ -126,19 +125,16 @@ def test_keyboard_navigation_and_escape(overlay, qapp):
     assert overlay.loader.interrupted and overlay.exits
 
 
-def test_focus_loss_closes_only_visible_inactive_window(overlay, qapp, monkeypatch):
+def test_native_window_stays_open_when_focus_moves(overlay, qapp, monkeypatch):
     overlay.loader.deliver(Discovery())
     overlay.show()
     qapp.processEvents()
-    monkeypatch.setattr(overlay, "isActiveWindow", lambda: True)
-    qapp.sendEvent(overlay, QEvent(QEvent.Type.ActivationChange))
-    assert overlay.isVisible()
+    assert not overlay.windowFlags() & Qt.WindowType.FramelessWindowHint
+    assert overlay.windowType() == Qt.WindowType.Window
     monkeypatch.setattr(overlay, "isActiveWindow", lambda: False)
     qapp.sendEvent(overlay, QEvent(QEvent.Type.ActivationChange))
-    assert not overlay.isVisible()
-    before = len(overlay.exits)
-    qapp.sendEvent(overlay, QEvent(QEvent.Type.ActivationChange))
-    assert len(overlay.exits) == before
+    assert overlay.isVisible()
+    assert not overlay.exits
 
 
 def test_close_during_discovery_waits_for_worker(overlay):
@@ -202,16 +198,16 @@ def test_resizing_gives_results_more_space_and_preserves_size(overlay, qapp):
     overlay.loader.deliver(Discovery(rows()))
     overlay.show()
     qapp.processEvents()
-    assert overlay.size_grip.isVisible()
+    assert overlay.status_bar.findChild(QSizeGrip).isVisible()
     assert overlay.details.height() < 90
     original_tree_height = overlay.tree.height()
     original_action_width = overlay.tree.columnWidth(0)
-    original_keys_width = overlay.tree.columnWidth(1)
+    original_keys_width = overlay.tree.columnWidth(2)
     overlay.resize(overlay.width() - 100, overlay.height() - 80)
     qapp.processEvents()
     assert overlay.tree.height() < original_tree_height
     assert overlay.tree.columnWidth(0) < original_action_width
-    assert overlay.tree.columnWidth(1) == original_keys_width
+    assert overlay.tree.columnWidth(2) == original_keys_width
     resized = overlay.size()
     overlay.hide()
     overlay.show()
@@ -219,7 +215,8 @@ def test_resizing_gives_results_more_space_and_preserves_size(overlay, qapp):
     assert overlay.size() == resized
     overlay.show_settings()
     qapp.processEvents()
-    assert overlay.size_grip.isVisible()
+    assert overlay.settings_page.isVisible()
+    assert not overlay.status_bar.isVisible()
 
 
 def test_many_bindings_leave_room_for_action_names(overlay, qapp):
@@ -228,15 +225,15 @@ def test_many_bindings_leave_room_for_action_names(overlay, qapp):
         Shortcut("kwin", "long", "KWin", "Action with several bindings", keys, "Windows")]))
     overlay.show()
     qapp.processEvents()
-    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(1)
+    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(2)
     item = overlay.tree.currentItem()
-    assert item.toolTip(1) == "  or  ".join(keys)
-    assert [label.toolTip() for label in overlay.tree.itemWidget(item, 1).findChildren(QLabel)] == list(keys)
-    original_keys_width = overlay.tree.columnWidth(1)
+    assert item.toolTip(2) == "  or  ".join(keys)
+    assert item.text(2) == "  or  ".join(keys)
+    original_keys_width = overlay.tree.columnWidth(2)
     overlay.resize(680, 520)
     qapp.processEvents()
-    assert overlay.tree.columnWidth(1) < original_keys_width
-    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(1)
+    assert overlay.tree.columnWidth(2) < original_keys_width
+    assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(2)
 
 
 def test_edit_failure_is_visible_and_category_has_no_action(overlay, monkeypatch):
@@ -249,3 +246,46 @@ def test_edit_failure_is_visible_and_category_has_no_action(overlay, monkeypatch
     overlay.tree.setCurrentItem(overlay.tree.topLevelItem(0))
     assert overlay.selected_shortcut is None
     assert overlay.details.isHidden()
+
+
+def test_search_shortcuts_preserve_typing_and_return_from_settings(overlay, qapp):
+    overlay.loader.deliver(Discovery(rows()))
+    overlay.show()
+    overlay.activateWindow()
+    qapp.processEvents()
+    overlay.tree.setFocus()
+    QTest.keyClick(overlay.tree, Qt.Key.Key_Slash)
+    assert overlay.input.hasFocus()
+    assert overlay.input.text() == ""
+    QTest.keyClicks(overlay.input, "kwin/alpha")
+    assert overlay.input.text() == "kwin/alpha"
+    overlay.show_settings()
+    QTest.keyClick(overlay.settings_page.configure, Qt.Key.Key_Slash)
+    assert overlay.pages.currentIndex() == 0
+    assert overlay.input.hasFocus()
+    assert overlay.input.selectedText() == "kwin/alpha"
+    overlay.refresh.setFocus()
+    QTest.keyClick(overlay.refresh, Qt.Key.Key_R, Qt.KeyboardModifier.ControlModifier)
+    assert overlay.loader.starts == 2
+
+
+def test_settings_scroll_at_large_system_font(overlay, qapp):
+    from PySide6.QtGui import QFont
+    original = QFont(qapp.font())
+    try:
+        font = QFont(original)
+        font.setPointSize(14)
+        qapp.setFont(font)
+        overlay.show_settings()
+        overlay.resize(540, 400)
+        overlay.show()
+        qapp.processEvents()
+        page = overlay.settings_page
+        assert page.verticalScrollBar().maximum() > 0
+        assert page.horizontalScrollBar().maximum() == 0
+        page.ensureWidgetVisible(page.check_updates)
+        qapp.processEvents()
+        assert page.verticalScrollBar().value() > 0
+        assert page.configure.font().pointSize() == 14
+    finally:
+        qapp.setFont(original)

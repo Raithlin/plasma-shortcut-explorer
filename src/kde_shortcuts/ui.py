@@ -1,9 +1,9 @@
 import asyncio
-from PySide6.QtCore import Qt, QThread, Signal, QEvent, QSize
-from PySide6.QtGui import QGuiApplication, QCursor, QKeySequence, QShortcut, QPalette
+from PySide6.QtCore import Qt, QThread, Signal, QEvent
+from PySide6.QtGui import QGuiApplication, QCursor, QKeySequence, QShortcut, QIcon
 from PySide6.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit,
     QTreeWidget, QTreeWidgetItem, QPushButton, QStackedWidget, QFrame,
-    QHeaderView, QSizeGrip)
+    QHeaderView, QStatusBar, QAbstractItemView)
 from .config import WIDTH, HEIGHT
 from .settings_ui import SettingsPage
 from .integration import open_shortcut_settings
@@ -20,82 +20,86 @@ class Loader(QThread):
 
 class Overlay(QWidget):
     def __init__(self):
-        super().__init__(None, Qt.WindowType.Tool | Qt.WindowType.FramelessWindowHint)
+        super().__init__()
         self.setWindowTitle("Plasma Shortcut Explorer")
         self.resize(WIDTH, HEIGHT)
         self.rows = []
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(24, 20, 24, 16)
-        title = QLabel("Plasma Shortcut Explorer")
-        font = title.font()
-        font.setPointSize(18)
-        font.setBold(True)
-        title.setFont(font)
-        header = QHBoxLayout()
-        header.addWidget(title)
-        header.addStretch()
-        self.settings_button = QPushButton("Settings")
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        toolbar = QWidget()
+        header = QHBoxLayout(toolbar)
+        self.input = QLineEdit()
+        self.input.setPlaceholderText("Search actions, applications, or shortcuts")
+        self.input.setAccessibleName("Search shortcuts")
+        self.input.setToolTip("Focus search with / or Ctrl+F")
+        self.input.setClearButtonEnabled(True)
+        self.input.addAction(QIcon.fromTheme("edit-find"), QLineEdit.ActionPosition.LeadingPosition)
+        header.addWidget(self.input, 1)
+        self.page_title = QLabel("Settings")
+        self.page_title.hide()
+        header.addWidget(self.page_title, 1)
+        self.refresh = QPushButton(QIcon.fromTheme("view-refresh"), "&Refresh")
+        self.refresh.setToolTip("Read current shortcuts again (Ctrl+R)")
+        header.addWidget(self.refresh)
+        self.settings_button = QPushButton(QIcon.fromTheme("configure"), "&Settings")
+        self.settings_button.setToolTip("Settings (Ctrl+,)")
         self.settings_button.clicked.connect(self.toggle_settings)
         header.addWidget(self.settings_button)
-        layout.addLayout(header)
+        layout.addWidget(toolbar)
         self.pages = QStackedWidget()
         explorer = QWidget()
         content = QVBoxLayout(explorer)
         content.setContentsMargins(0, 0, 0, 0)
+        content.setSpacing(0)
         self.pages.addWidget(explorer)
-        layout.addWidget(self.pages)
-        self.input = QLineEdit()
-        self.input.setPlaceholderText("Search actions, apps, keys…")
-        self.input.setClearButtonEnabled(True)
-        self.input.setTextMargins(8, 6, 8, 6)
-        self.input.setMinimumHeight(38)
-        content.addWidget(self.input)
+        layout.addWidget(self.pages, 1)
         self.tree = QTreeWidget()
-        self.tree.setHeaderHidden(True)
+        self.tree.setHeaderLabels(["Action", "Application", "Shortcut"])
+        self.tree.setAccessibleName("Assigned global shortcuts")
+        self.tree.setAlternatingRowColors(True)
+        self.tree.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tree.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.tree.setFrameShape(QFrame.Shape.NoFrame)
-        self.tree.setColumnCount(2)
         self.tree.header().setStretchLastSection(False)
         self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
         self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
+        self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         self.tree.viewport().installEventFilter(self)
         self.tree.setRootIsDecorated(False)
-        self.tree.setIndentation(12)
+        self.tree.setItemsExpandable(False)
+        self.tree.setIndentation(0)
         content.addWidget(self.tree, 1)
         self.details = QFrame()
-        self.details.setFrameShape(QFrame.Shape.StyledPanel)
         details_layout = QHBoxLayout(self.details)
         self.detail_text = QLabel()
         self.detail_text.setTextFormat(Qt.TextFormat.PlainText)
         self.detail_text.setWordWrap(True)
         details_layout.addWidget(self.detail_text, 1)
-        self.edit_button = QPushButton("Edit in Plasma…")
+        self.edit_button = QPushButton(QIcon.fromTheme("document-edit"), "&Edit in Plasma…")
         self.edit_button.clicked.connect(self.edit_selected)
         details_layout.addWidget(self.edit_button)
         self.details.hide()
         content.addWidget(self.details)
         self.tree.currentItemChanged.connect(self.selection_changed)
-        self.status = QLabel("Reading current KDE shortcuts…")
-        self.status.setWordWrap(True)
-        self.status.setTextFormat(Qt.TextFormat.PlainText)
-        content.addWidget(self.status)
-        bottom = QHBoxLayout()
-        bottom.addWidget(QLabel("↑ ↓ Navigate    •    Esc Close"))
-        bottom.addStretch()
-        self.refresh = QPushButton("Refresh")
-        bottom.addWidget(self.refresh)
-        content.addLayout(bottom)
         self.settings_page = SettingsPage()
         self.pages.addWidget(self.settings_page)
         self.update_banner = QPushButton()
+        self.update_banner.setIcon(QIcon.fromTheme("software-update-available"))
         self.update_banner.hide()
         self.update_banner.clicked.connect(self.show_settings)
         self.settings_page.update_checker.checked.connect(self.show_update)
         layout.addWidget(self.update_banner)
-        self.size_grip = QSizeGrip(self)
-        self.size_grip.setToolTip("Drag to resize")
-        layout.addWidget(self.size_grip, alignment=Qt.AlignmentFlag.AlignRight)
+        self.status_bar = QStatusBar()
+        self.status = QLabel("Reading current KDE shortcuts…")
+        self.status.setWordWrap(True)
+        self.status.setTextFormat(Qt.TextFormat.PlainText)
+        self.status_bar.addWidget(self.status, 1)
+        layout.addWidget(self.status_bar)
         QShortcut(QKeySequence("Ctrl+,"), self, activated=self.show_settings)
-        QShortcut(QKeySequence("Ctrl+F"), self, activated=self.input.setFocus)
+        QShortcut(QKeySequence("/"), self, activated=self.focus_search)
+        QShortcut(QKeySequence("Ctrl+F"), self, activated=self.focus_search)
+        QShortcut(QKeySequence("Ctrl+R"), self, activated=self.reload)
         self.input.textChanged.connect(self.render)
         self.input.installEventFilter(self)
         self.refresh.clicked.connect(self.reload)
@@ -126,18 +130,38 @@ class Overlay(QWidget):
         except OSError as error:
             self.status.setText(str(error))
 
+    def focus_search(self):
+        self.show_explorer()
+        self.input.setFocus()
+        self.input.selectAll()
+
+    def show_explorer(self):
+        self.pages.setCurrentIndex(0)
+        self.input.show()
+        self.refresh.show()
+        self.page_title.hide()
+        self.status_bar.show()
+        self.settings_button.setText("&Settings")
+        self.settings_button.setIcon(QIcon.fromTheme("configure"))
+        self.settings_button.setToolTip("Settings (Ctrl+,)")
+        self.input.setFocus()
+
     def show_settings(self):
         self.pages.setCurrentIndex(1)
-        self.settings_button.setText("Back to shortcuts")
+        self.input.hide()
+        self.refresh.hide()
+        self.page_title.show()
+        self.status_bar.hide()
+        self.settings_button.setText("&Back")
+        self.settings_button.setIcon(QIcon.fromTheme("go-previous"))
+        self.settings_button.setToolTip("Back to shortcuts")
         self.settings_page.configure.setFocus()
 
     def toggle_settings(self):
         if self.pages.currentIndex() == 0:
             self.show_settings()
         else:
-            self.pages.setCurrentIndex(0)
-            self.settings_button.setText("Settings")
-            self.input.setFocus()
+            self.show_explorer()
 
     def reload(self):
         if self.loader.isRunning():
@@ -166,26 +190,15 @@ class Overlay(QWidget):
                 font = group.font(0)
                 font.setBold(True)
                 group.setFont(0, font)
+                group.setFirstColumnSpanned(True)
                 group.setExpanded(True)
                 groups[row.category] = group
-            item = QTreeWidgetItem(groups[row.category], [f"{row.action}  ·  {row.application}"])
+            item = QTreeWidgetItem(groups[row.category],
+                                   [row.action, row.application, "  or  ".join(row.keys)])
             item.setData(0, Qt.ItemDataRole.UserRole, row)
-            item.setSizeHint(0, QSize(0, 42))
             item.setToolTip(0, f"{row.component} / {row.action_id}")
-            item.setToolTip(1, "  or  ".join(row.keys))
-            caps = QWidget()
-            box = QHBoxLayout(caps)
-            box.setContentsMargins(2, 2, 2, 2)
-            for key in row.keys:
-                label = QLabel(key)
-                label.setToolTip(key)
-                label.setFrameShape(QFrame.Shape.StyledPanel)
-                label.setMargin(4)
-                label.setAutoFillBackground(True)
-                label.setBackgroundRole(QPalette.ColorRole.AlternateBase)
-                box.addWidget(label)
-            box.addStretch()
-            self.tree.setItemWidget(item, 1, caps)
+            item.setToolTip(1, row.application)
+            item.setToolTip(2, "  or  ".join(row.keys))
             first = first or item
         self.resize_columns()
         if first:
@@ -202,9 +215,10 @@ class Overlay(QWidget):
         self.status.setToolTip("\n".join(errors))
 
     def resize_columns(self):
-        # Reserve room for action names even when an action has many assigned keys.
-        self.tree.setColumnWidth(1, min(self.tree.sizeHintForColumn(1),
-                                       int(self.tree.viewport().width() * 0.45)))
+        # Keep action names usable at narrow widths; full text is in tooltips.
+        width = self.tree.viewport().width()
+        self.tree.setColumnWidth(1, min(self.tree.sizeHintForColumn(1), int(width * 0.25)))
+        self.tree.setColumnWidth(2, min(self.tree.sizeHintForColumn(2), int(width * 0.35)))
 
     def eventFilter(self, obj, event):
         if obj is self.tree.viewport() and event.type() == QEvent.Type.Resize:
@@ -225,11 +239,6 @@ class Overlay(QWidget):
             self.input.setFocus()
         else:
             self.settings_page.configure.setFocus()
-
-    def changeEvent(self, event):
-        if event.type() == QEvent.Type.ActivationChange and not self.isActiveWindow() and self.isVisible():
-            self.close()
-        super().changeEvent(event)
 
     def closeEvent(self, event):
         # Keep the worker alive until completion; exit without destroying a running QThread.
