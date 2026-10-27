@@ -39,10 +39,10 @@ and dark window colors. Discovery integration tests use the isolated private bus
 The updated screenshots were captured from the source app running in the live
 Plasma Wayland session with the installed Breeze widget style and the user's
 current theme, font, and icons. Discovery returned 123 assigned shortcuts without
-errors. The search screenshot uses the query `window`. The captures use Qt's
-window grab and show client content; compositor titlebars and borders are outside
-these images. Launching on Wayland does not by itself verify interactive edge
-resizing, task switching, or placement across monitors; those remain manual checks.
+errors. The search screenshot uses the query `window`. The captures use Spectacle's active-window mode with decorations included.
+Visual inspection confirms the KWin titlebar, app icon, and minimize, maximize,
+and close controls in both views. Interactive edge resizing, task switching, and
+placement across monitors remain manual checks.
 
 No shortcut settings, system appearance settings, or window rules are changed by
 this interface revision.
