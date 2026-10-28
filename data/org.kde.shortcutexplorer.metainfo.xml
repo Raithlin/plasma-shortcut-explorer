@@ -20,6 +20,14 @@
     <name>Plasma Shortcut Explorer contributors</name>
   </developer>
   <releases>
+    <release version="0.1.5" type="stable" date="2026-10-28">
+      <description>
+        <p>Sort shortcuts within each category by clicking column headers.
+        Resize Action and Application while Shortcut fills the remaining width.
+        Keep column positions fixed and preserve sorting and adjusted widths
+        through searches and refreshes.</p>
+      </description>
+    </release>
     <release version="0.1.4" type="stable" date="2026-10-27">
       <description>
         <p>Adopt native KDE window controls, shortcut columns, and scrollable settings.

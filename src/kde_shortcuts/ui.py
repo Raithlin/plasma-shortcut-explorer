@@ -62,9 +62,16 @@ class Overlay(QWidget):
         self.tree.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.tree.setFrameShape(QFrame.Shape.NoFrame)
         self.tree.header().setStretchLastSection(False)
-        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.tree.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.columns_resized = False
+        self.resizing_columns = False
+        self.tree.header().sectionResized.connect(self.column_resized)
+        self.tree.header().setSectionsClickable(True)
+        self.tree.header().setSectionsMovable(False)
+        self.tree.header().setSortIndicator(0, Qt.SortOrder.AscendingOrder)
+        self.tree.header().setSortIndicatorShown(True)
+        self.tree.header().sortIndicatorChanged.connect(self.sort_results)
         self.tree.viewport().installEventFilter(self)
         self.tree.setRootIsDecorated(False)
         self.tree.setItemsExpandable(False)
@@ -182,7 +189,6 @@ class Overlay(QWidget):
         self.tree.clear()
         matches = search(self.rows, self.input.text())
         groups = {}
-        first = None
         for row in matches:
             if row.category not in groups:
                 group = QTreeWidgetItem(self.tree, [row.category])
@@ -199,10 +205,10 @@ class Overlay(QWidget):
             item.setToolTip(0, f"{row.component} / {row.action_id}")
             item.setToolTip(1, row.application)
             item.setToolTip(2, "  or  ".join(row.keys))
-            first = first or item
+        self.sort_results()
         self.resize_columns()
-        if first:
-            self.tree.setCurrentItem(first)
+        if self.tree.topLevelItemCount():
+            self.tree.setCurrentItem(self.tree.topLevelItem(0).child(0))
         errors = getattr(self, "errors", [])
         count = f"{len(self.rows)} shortcut{'s' if len(self.rows) != 1 else ''} configured"
         if self.input.text().strip():
@@ -214,11 +220,29 @@ class Overlay(QWidget):
         self.status.setText(count)
         self.status.setToolTip("\n".join(errors))
 
+    def sort_results(self):
+        # Sort shortcuts within each category, keeping category headings in place.
+        header = self.tree.header()
+        for index in range(self.tree.topLevelItemCount()):
+            self.tree.topLevelItem(index).sortChildren(
+                header.sortIndicatorSection(), header.sortIndicatorOrder())
+
     def resize_columns(self):
         # Keep action names usable at narrow widths; full text is in tooltips.
+        # Once the user adjusts a column, leave the first two widths alone.
+        if self.columns_resized or self.resizing_columns:
+            return
+        self.resizing_columns = True
         width = self.tree.viewport().width()
         self.tree.setColumnWidth(1, min(self.tree.sizeHintForColumn(1), int(width * 0.25)))
-        self.tree.setColumnWidth(2, min(self.tree.sizeHintForColumn(2), int(width * 0.35)))
+        keys_width = min(self.tree.sizeHintForColumn(2), int(width * 0.35))
+        self.tree.setColumnWidth(0, max(self.tree.header().minimumSectionSize(),
+                                      width - self.tree.columnWidth(1) - keys_width))
+        self.resizing_columns = False
+
+    def column_resized(self, column):
+        if column != 2 and not self.resizing_columns:
+            self.columns_resized = True
 
     def eventFilter(self, obj, event):
         if obj is self.tree.viewport() and event.type() == QEvent.Type.Resize:

@@ -1,3 +1,11 @@
+plasma-shortcut-explorer (0.1.5-1) unstable; urgency=medium
+
+  * Sort shortcuts within categories using the column headers.
+  * Resize Action and Application while Shortcut fills the remaining width.
+  * Keep column positions fixed and preserve sorting and adjusted widths.
+
+ -- Stephen Metcalfe <raithlin@outlook.com>  Wed, 28 Oct 2026 12:00:00 +0200
+
 plasma-shortcut-explorer (0.1.4-1) unstable; urgency=medium
 
   * Keep settings within the window width with larger or wider fonts.
