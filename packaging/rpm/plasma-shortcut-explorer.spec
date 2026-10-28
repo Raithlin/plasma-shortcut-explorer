@@ -1,7 +1,7 @@
 # Distro PySide6 supplies the import but does not always use PyPI's split name.
 %global __requires_exclude ^.*pyside6-essentials.*$
 Name:           plasma-shortcut-explorer
-Version:        0.1.4
+Version:        0.1.5
 Release:        1%{?dist}
 Summary:        Search the global shortcuts configured in KDE Plasma 6
 License:        MIT

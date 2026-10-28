@@ -1,6 +1,7 @@
 # Release engineering
 
-Version 0.1.4 adopts a native KDE window layout and adds search navigation. GitHub
+Version 0.1.5 adds column sorting, resizable columns, and a Shortcut column that
+fills the remaining width. GitHub
 Releases hosts the source archive, wheel, and native packages. AUR publishing
 and AppImage qualification remain pending.
 
@@ -13,10 +14,10 @@ Keep the version consistent in:
 - `packaging/debian/changelog`
 - `data/org.kde.shortcutexplorer.metainfo.xml`
 
-Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.4:
+Update `CHANGELOG.md`, then validate the intended tag. For version 0.1.5:
 
 ```sh
-python scripts/validate_release.py --tag v0.1.4
+python scripts/validate_release.py --tag v0.1.5
 ```
 
 The script reports consistent metadata or exits with an error. It also checks
@@ -156,6 +157,13 @@ JSON errors. The current helper does not establish portability; AppImage remains
 outside automatic release publication.
 
 ## Validation record
+
+For v0.1.5, the local suite passed 101 tests with 99.66% line and 98.46% branch
+coverage. Offscreen interaction tests cover header sorting, divider dragging,
+selection, filtering, refresh, and filling the available width after window
+resizing. The user confirmed the layout in Plasma. Full keyboard launch, theme,
+and multi-monitor checks have not been repeated for this release. The tagged
+workflow validates source artifacts and native packages before publication.
 
 For v0.1.4, the local suite passed 96 tests with 99.65% line and 98.39% branch
 coverage. The live Plasma Wayland run used Breeze and discovered 123 bindings

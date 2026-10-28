@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.5 (2026-10-28)
+
 - Keep column positions fixed while allowing header sorting and divider resizing.
 - Resize Action and Application by dragging their header dividers, with Shortcut
   filling the remaining width. Preserve adjusted widths for the lifetime of the window.
