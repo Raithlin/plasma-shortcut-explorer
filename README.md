@@ -45,8 +45,9 @@ Use **Refresh** or **Ctrl+R** to read the current bindings again.
 Click **Action**, **Application**, or **Shortcut** to sort within each category;
 click the same header again to reverse the order. Searches and refreshes keep
 your selected sort order.
-Drag the dividers between column headers to resize the columns. Your chosen
-widths stay in place while the window is open, including after searches and refreshes.
+Drag the dividers between column headers to resize Action and Application;
+Shortcut fills the remaining width. Your chosen widths stay in place while the
+window is open, including after searches and refreshes.
 The count beneath the list shows the configured total, or how many shortcuts
 match your search.
 

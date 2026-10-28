@@ -297,7 +297,7 @@ def test_many_bindings_leave_room_for_action_names(overlay, qapp):
     assert overlay.tree.columnWidth(0) > overlay.tree.columnWidth(2)
 
 
-@pytest.mark.parametrize("column", [0, 1, 2], ids=["action", "application", "shortcut"])
+@pytest.mark.parametrize("column", [0, 1], ids=["action", "application"])
 def test_dragged_column_widths_survive_search_refresh_and_window_resize(overlay, qapp, column):
     overlay.loader.deliver(Discovery(rows()))
     overlay.show()
@@ -313,13 +313,22 @@ def test_dragged_column_widths_survive_search_refresh_and_window_resize(overlay,
     qapp.processEvents()
     assert header.sectionSize(column) < original
     widths = [header.sectionSize(i) for i in range(3)]
+    assert sum(widths) == overlay.tree.viewport().width()
     overlay.input.setText("Meta B")
     overlay.refresh.click()
     overlay.loader.deliver(Discovery(rows()))
     overlay.input.clear()
-    overlay.resize(overlay.width() + 100, overlay.height())
     qapp.processEvents()
     assert [header.sectionSize(i) for i in range(3)] == widths
+    overlay.resize(overlay.width() + 100, overlay.height())
+    qapp.processEvents()
+    assert [header.sectionSize(i) for i in range(2)] == widths[:2]
+    assert header.sectionSize(2) == widths[2] + 100
+    assert sum(header.sectionSize(i) for i in range(3)) == overlay.tree.viewport().width()
+    overlay.resize(overlay.width() - 150, overlay.height())
+    qapp.processEvents()
+    assert [header.sectionSize(i) for i in range(2)] == widths[:2]
+    assert sum(header.sectionSize(i) for i in range(3)) == overlay.tree.viewport().width()
     assert overlay.tree.currentItem().text(0) == "Volume Up"
 
 

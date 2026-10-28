@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-- Resize the Action, Application, and Shortcut columns by dragging their header
-  dividers. Preserve adjusted widths for the lifetime of the window.
+- Resize Action and Application by dragging their header dividers, with Shortcut
+  filling the remaining width. Preserve adjusted widths for the lifetime of the window.
 - Sort shortcuts within each category by clicking the Action, Application, or
   Shortcut column header. Click again to reverse the order; searches and refreshes
   preserve the selected sort.
