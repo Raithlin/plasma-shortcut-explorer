@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Sort shortcuts within each category by clicking the Action, Application, or
+  Shortcut column header. Click again to reverse the order; searches and refreshes
+  preserve the selected sort.
+
 ## 0.1.4 (2026-10-27)
 
 - Use a standard decorated KDE window that stays open when focus moves elsewhere;

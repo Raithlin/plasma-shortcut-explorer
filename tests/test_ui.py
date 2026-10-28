@@ -1,7 +1,7 @@
 import time
 
 import pytest
-from PySide6.QtCore import QObject, Signal, QEvent, Qt
+from PySide6.QtCore import QObject, Signal, QEvent, Qt, QPoint
 from PySide6.QtGui import QKeyEvent
 from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QSizeGrip
@@ -87,6 +87,67 @@ def test_single_configured_shortcut_and_partial_filtered_count(overlay):
     assert overlay.status.text() == (
         "0 of 3 shortcuts shown · No matching assigned shortcuts"
         " · Partial discovery: Component unavailable")
+
+
+@pytest.mark.parametrize("column", [0, 1, 2], ids=["action", "application", "shortcut"])
+def test_header_sorting_preserves_groups_selection_and_order_on_render(overlay, qapp, column):
+    shortcuts = [
+        Shortcut("app", "z", "Alpha app", "Zulu entry", ("Ctrl+B", "Meta+B"), "Applications"),
+        Shortcut("app", "a", "Zulu app", "Alpha entry", ("Ctrl+C",), "Applications"),
+        Shortcut("app", "m", "Middle app", "Middle", ("Ctrl+A",), "Applications"),
+        Shortcut("kwin", "z", "Alpha app", "Zulu entry", ("Meta+A",), "Windows"),
+        Shortcut("kwin", "a", "Zulu app", "Alpha entry", ("Alt+A",), "Windows"),
+    ]
+    overlay.loader.deliver(Discovery(shortcuts))
+    overlay.show()
+    qapp.processEvents()
+    header = overlay.tree.header()
+    assert header.isSortIndicatorShown()
+    assert header.sortIndicatorSection() == 0
+    assert header.sortIndicatorOrder() == Qt.SortOrder.AscendingOrder
+    assert overlay.selected_shortcut.action == "Alpha entry"
+    selected = overlay.selected_shortcut
+
+    def click_header():
+        QTest.mouseClick(header.viewport(), Qt.MouseButton.LeftButton, pos=QPoint(
+            header.sectionViewportPosition(column) + header.sectionSize(column) // 2,
+            header.height() // 2))
+        qapp.processEvents()
+
+    def assert_order(descending):
+        assert header.sortIndicatorSection() == column
+        assert header.sortIndicatorOrder() == (
+            Qt.SortOrder.DescendingOrder if descending else Qt.SortOrder.AscendingOrder)
+        assert [overlay.tree.topLevelItem(i).text(0) for i in range(2)] == [
+            "Applications", "Windows"]
+        for index in range(2):
+            group = overlay.tree.topLevelItem(index)
+            values = [group.child(i).text(column) for i in range(group.childCount())]
+            assert values == sorted(values, reverse=descending)
+
+    click_header()
+    if header.sortIndicatorOrder() == Qt.SortOrder.DescendingOrder:
+        click_header()
+    assert_order(False)
+    click_header()
+    assert_order(True)
+    assert overlay.selected_shortcut == selected
+    assert overlay.tree.currentItem().data(0, Qt.ItemDataRole.UserRole) == selected
+    assert selected.action in overlay.detail_text.text()
+
+    overlay.input.setText("entry")
+    assert_order(True)
+    assert overlay.tree.topLevelItem(0).childCount() == 2
+    assert overlay.tree.currentItem() == overlay.tree.topLevelItem(0).child(0)
+    overlay.refresh.click()
+    overlay.loader.deliver(Discovery(list(reversed(shortcuts))))
+    assert_order(True)
+    overlay.input.setText("no matching action")
+    assert overlay.tree.topLevelItemCount() == 0
+    click_header()
+    overlay.input.clear()
+    assert_order(False)
+    assert overlay.tree.currentItem() == overlay.tree.topLevelItem(0).child(0)
 
 
 def test_refresh_rereads_and_reports_errors(overlay):
