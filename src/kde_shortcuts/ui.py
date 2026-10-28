@@ -62,9 +62,10 @@ class Overlay(QWidget):
         self.tree.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerPixel)
         self.tree.setFrameShape(QFrame.Shape.NoFrame)
         self.tree.header().setStretchLastSection(False)
-        self.tree.header().setSectionResizeMode(0, QHeaderView.ResizeMode.Stretch)
-        self.tree.header().setSectionResizeMode(1, QHeaderView.ResizeMode.Fixed)
-        self.tree.header().setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
+        self.tree.header().setSectionResizeMode(QHeaderView.ResizeMode.Interactive)
+        self.columns_resized = False
+        self.resizing_columns = False
+        self.tree.header().sectionResized.connect(self.column_resized)
         self.tree.header().setSectionsClickable(True)
         self.tree.header().setSortIndicator(0, Qt.SortOrder.AscendingOrder)
         self.tree.header().setSortIndicatorShown(True)
@@ -226,9 +227,20 @@ class Overlay(QWidget):
 
     def resize_columns(self):
         # Keep action names usable at narrow widths; full text is in tooltips.
+        # Once the user adjusts a column, leave their widths alone.
+        if self.columns_resized or self.resizing_columns:
+            return
+        self.resizing_columns = True
         width = self.tree.viewport().width()
         self.tree.setColumnWidth(1, min(self.tree.sizeHintForColumn(1), int(width * 0.25)))
         self.tree.setColumnWidth(2, min(self.tree.sizeHintForColumn(2), int(width * 0.35)))
+        self.tree.setColumnWidth(0, max(self.tree.header().minimumSectionSize(),
+                                      width - self.tree.columnWidth(1) - self.tree.columnWidth(2)))
+        self.resizing_columns = False
+
+    def column_resized(self):
+        if not self.resizing_columns:
+            self.columns_resized = True
 
     def eventFilter(self, obj, event):
         if obj is self.tree.viewport() and event.type() == QEvent.Type.Resize:
