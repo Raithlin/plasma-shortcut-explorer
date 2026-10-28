@@ -68,6 +68,7 @@ class Overlay(QWidget):
         self.resizing_columns = False
         self.tree.header().sectionResized.connect(self.column_resized)
         self.tree.header().setSectionsClickable(True)
+        self.tree.header().setSectionsMovable(False)
         self.tree.header().setSortIndicator(0, Qt.SortOrder.AscendingOrder)
         self.tree.header().setSortIndicatorShown(True)
         self.tree.header().sortIndicatorChanged.connect(self.sort_results)
